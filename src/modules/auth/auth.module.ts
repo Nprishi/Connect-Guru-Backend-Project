@@ -1,0 +1,34 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
+
+import { UsersModule } from '../users/users.module';
+import { AuthController } from './controllers/auth.controller';
+import { SuperAdminController } from './controllers/super-admin.controller';
+import { AUTH_CONSTANTS } from './auth.constants';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { AuthService } from './services/auth.service';
+import { SuperAdminSeeder } from './super-admin.seed';
+
+@Module({
+  imports: [
+    UsersModule,
+    PassportModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_ACCESS_SECRET'),
+        signOptions: {
+          expiresIn: AUTH_CONSTANTS.ACCESS_TOKEN_EXPIRES_IN,
+        },
+      }),
+    }),
+  ],
+  controllers: [AuthController, SuperAdminController],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, SuperAdminSeeder],
+})
+export class AuthModule {}
