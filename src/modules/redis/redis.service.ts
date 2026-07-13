@@ -7,8 +7,15 @@ export class RedisService implements OnModuleInit {
   private client?: RedisClientType;
 
   async onModuleInit() {
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    const protocol = isProduction ? 'rediss' : 'redis';
+    const auth = isProduction
+      ? `default:${process.env.REDIS_PASSWORD}`
+      : `:${process.env.REDIS_PASSWORD}`;
+
     this.client = createClient({
-      url: `redis://:${process.env.REDIS_PASSWORD || ''}@${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}`,
+      url: `${protocol}://${auth}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
     });
 
     this.client.on('error', (err) => {
