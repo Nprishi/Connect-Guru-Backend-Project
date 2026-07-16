@@ -4,6 +4,10 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator
 export class CreatePaymentDto {
   @IsNotEmpty()
   @IsString()
+  teacherId!: string;
+
+  @IsNotEmpty()
+  @IsString()
   packageId!: string;
 
   @IsNotEmpty()

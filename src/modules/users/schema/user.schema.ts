@@ -90,6 +90,62 @@ export class User {
   refreshToken!: string | null;
 
   @Prop({
+    type: String,
+    select: false,
+    default: null,
+  })
+  resetPasswordToken!: string | null;
+
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  resetPasswordExpiresAt!: Date | null;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  isEmailVerified!: boolean;
+
+  @Prop({
+    type: String,
+    select: false,
+    default: null,
+  })
+  emailVerificationOtpHash!: string | null;
+
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  emailVerificationOtpExpiresAt!: Date | null;
+
+  @Prop({
+    type: Number,
+    default: 0,
+  })
+  emailVerificationAttempts!: number;
+
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  emailVerificationLastSentAt!: Date | null;
+
+  @Prop({
+    type: Object,
+    default: {
+      notifications: true,
+      emailUpdates: true,
+    },
+  })
+  settings!: {
+    notifications?: boolean;
+    emailUpdates?: boolean;
+  };
+
+  @Prop({
     type: Date,
     default: null,
   })

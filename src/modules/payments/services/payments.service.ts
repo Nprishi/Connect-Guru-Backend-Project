@@ -22,7 +22,7 @@ export class PaymentsService {
 
     return this.paymentModel.create({
       studentId,
-      teacherId: 'teacher-placeholder',
+      teacherId: dto.teacherId,
       packageId: dto.packageId,
       amount: dto.amount,
       transactionId: dto.transactionId ?? null,
@@ -31,7 +31,10 @@ export class PaymentsService {
   }
 
   async getPaymentsForUser(userId: string) {
-    return this.paymentModel.find({ $or: [{ studentId: userId }, { teacherId: userId }] }).exec();
+    return this.paymentModel
+      .find({ $or: [{ studentId: userId }, { teacherId: userId }] })
+      .sort({ createdAt: -1 })
+      .exec();
   }
 
   async updatePaymentStatus(paymentId: string, status: PaymentStatus) {

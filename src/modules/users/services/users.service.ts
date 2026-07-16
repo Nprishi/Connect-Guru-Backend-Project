@@ -14,6 +14,10 @@ export class UsersService {
     const user = new this.userModel({
       ...createUserDto,
       email: createUserDto.email?.toLowerCase(),
+      settings: {
+        notifications: true,
+        emailUpdates: true,
+      },
     });
 
     return user.save();
@@ -23,6 +27,8 @@ export class UsersService {
     email: string,
     includePassword = false,
     includeSuperAdminSecret = false,
+    includeSensitiveOtp = false,
+    includeResetToken = false,
   ): Promise<UserDocument | null> {
     const query = this.userModel.findOne({ email: email.toLowerCase() });
 
@@ -32,6 +38,14 @@ export class UsersService {
 
     if (includeSuperAdminSecret) {
       query.select('+superAdminSecret');
+    }
+
+    if (includeSensitiveOtp) {
+      query.select('+emailVerificationOtpHash');
+    }
+
+    if (includeResetToken) {
+      query.select('+resetPasswordToken');
     }
 
     return query.exec();
@@ -44,11 +58,21 @@ export class UsersService {
   async findById(
     id: string,
     includeRefreshToken = false,
+    includeSensitiveOtp = false,
+    includeResetToken = false,
   ): Promise<UserDocument | null> {
     const query = this.userModel.findById(id);
 
     if (includeRefreshToken) {
       query.select('+refreshToken');
+    }
+
+    if (includeSensitiveOtp) {
+      query.select('+emailVerificationOtpHash');
+    }
+
+    if (includeResetToken) {
+      query.select('+resetPasswordToken');
     }
 
     return query.exec();
@@ -82,5 +106,74 @@ export class UsersService {
     await this.userModel
       .findByIdAndUpdate(userId, { avatar: avatarUrl })
       .exec();
+  }
+
+  async getProfile(userId: string) {
+    return this.userModel.findById(userId).select('-password -refreshToken -superAdminSecret -resetPasswordToken -emailVerificationOtpHash').lean().exec();
+  }
+
+  async updateProfile(userId: string, updateData: Record<string, unknown>) {
+    return this.userModel
+      .findByIdAndUpdate(
+        userId,
+        {
+          $set: {
+            ...updateData,
+          },
+        },
+        { new: true },
+      )
+      .select('-password -refreshToken -superAdminSecret -resetPasswordToken -emailVerificationOtpHash')
+      .exec();
+  }
+
+  async getSettings(userId: string) {
+    const user = await this.userModel.findById(userId).select('settings').lean().exec();
+    return user?.settings ?? { notifications: true, emailUpdates: true };
+  }
+
+  async updateSettings(userId: string, settings: Record<string, unknown>) {
+    return this.userModel
+      .findByIdAndUpdate(
+        userId,
+        { $set: { settings } },
+        { new: true },
+      )
+      .select('settings')
+      .exec();
+  }
+
+  async deleteAccount(userId: string) {
+    await this.userModel.findByIdAndDelete(userId).exec();
+    return { success: true, message: 'Account deleted successfully.' };
+  }
+
+  async updateEmailVerificationTokens(
+    userId: string,
+    otpHash: string | null,
+    otpExpiresAt: Date | null,
+    lastSentAt: Date | null,
+  ) {
+    await this.userModel.findByIdAndUpdate(userId, {
+      emailVerificationOtpHash: otpHash,
+      emailVerificationOtpExpiresAt: otpExpiresAt,
+      emailVerificationLastSentAt: lastSentAt,
+    }).exec();
+  }
+
+  async markEmailVerified(userId: string) {
+    await this.userModel.findByIdAndUpdate(userId, {
+      isEmailVerified: true,
+      emailVerificationOtpHash: null,
+      emailVerificationOtpExpiresAt: null,
+      emailVerificationAttempts: 0,
+    }).exec();
+  }
+
+  async setResetPasswordToken(userId: string, tokenHash: string, expiresAt: Date) {
+    await this.userModel.findByIdAndUpdate(userId, {
+      resetPasswordToken: tokenHash,
+      resetPasswordExpiresAt: expiresAt,
+    }).exec();
   }
 }

@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -20,6 +20,27 @@ export class StudentsController {
       userId,
       createStudentProfileDto,
     );
+  }
+
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard)
+  patchProfile(
+    @CurrentUser('sub') userId: string,
+    @Body() payload: Record<string, unknown>,
+  ) {
+    return this.studentsService.updateProfile(userId, payload);
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getMe(@CurrentUser('sub') userId: string) {
+    return this.studentsService.getMe(userId);
+  }
+
+  @Get('dashboard')
+  @UseGuards(JwtAuthGuard)
+  getDashboard(@CurrentUser('sub') userId: string) {
+    return this.studentsService.getDashboard(userId);
   }
 
   @Get('profile/:userId')

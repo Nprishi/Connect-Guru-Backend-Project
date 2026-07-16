@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { Booking, BookingSchema } from '../bookings/schema/booking.schema';
+import { PackageItem, PackageSchema } from '../packages/schema/package.schema';
 import { UsersModule } from '../users/users.module';
 import {
   StudentProfile,
@@ -16,6 +18,14 @@ import { StudentsService } from './services/students.service';
       {
         name: StudentProfile.name,
         schema: StudentProfileSchema,
+      },
+      {
+        name: Booking.name,
+        schema: BookingSchema,
+      },
+      {
+        name: PackageItem.name,
+        schema: PackageSchema,
       },
     ]),
   ],

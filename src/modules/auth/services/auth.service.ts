@@ -2,21 +2,28 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { randomInt } from 'crypto';
 
 import { UsersService } from '../../users/services/users.service';
 import { AUTH_CONSTANTS } from '../auth.constants';
+import { ChangePasswordDto } from '../dto/change-password.dto';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { LoginDto } from '../dto/login.dto';
 import { RefreshTokenDto } from '../dto/refresh-token.dto';
 import { RegisterDto } from '../dto/register.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { SuperAdminLoginDto } from '../dto/super-admin-login.dto';
+import { VerifyEmailDto } from '../dto/verify-email.dto';
 import { UserRole } from '../enums/user-role.enum';
 import { UserStatus } from '../enums/user-status.enum';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { AuthEmailService } from './auth-email.service';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +31,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly authEmailService: AuthEmailService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -46,14 +54,32 @@ export class AuthService {
     const createdUser = await this.usersService.create({
       ...registerDto,
       password: hashedPassword,
+      isEmailVerified: false,
+      settings: {
+        notifications: true,
+        emailUpdates: true,
+      },
     });
+
+    const otp = this.generateOtp();
+    const otpHash = await bcrypt.hash(otp, 10);
+    const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await this.usersService.updateEmailVerificationTokens(
+      createdUser.id,
+      otpHash,
+      otpExpiresAt,
+      new Date(),
+    );
+
+    await this.authEmailService.sendVerificationOtp(createdUser.email, otp);
 
     const { accessToken, refreshToken } = await this.generateTokens(createdUser);
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
     await this.usersService.updateRefreshToken(createdUser.id, hashedRefreshToken);
 
     return {
-      message: 'User registered successfully.',
+      message: 'User registered successfully. Please verify your email.',
       data: {
         user: this.sanitizeUser(createdUser),
         accessToken,
@@ -79,9 +105,14 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password.');
     }
 
+    if (!user.isEmailVerified) {
+      throw new UnauthorizedException('Please verify your email before accessing the system.');
+    }
+
     const { accessToken, refreshToken } = await this.generateTokens(user);
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
     await this.usersService.updateRefreshToken(user.id, hashedRefreshToken);
+    await this.usersService.updateLastLogin(user.id);
 
     return {
       message: 'Login successful.',
@@ -171,6 +202,138 @@ export class AuthService {
     };
   }
 
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.usersService.findByEmail(dto.email);
+
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+
+    const token = await bcrypt.hash(`${user.id}-${Date.now()}-${Math.random()}`, 10);
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await this.usersService.setResetPasswordToken(user.id, token, expiresAt);
+
+    return {
+      message: 'Password reset link generated successfully.',
+      data: {
+        token,
+        expiresAt,
+      },
+    };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const user = await this.usersService.findByEmail('', false, false, false, true);
+
+    if (!user?.resetPasswordToken) {
+      throw new UnauthorizedException('Invalid or expired reset token.');
+    }
+
+    const isTokenValid = await bcrypt.compare(dto.token, user.resetPasswordToken);
+
+    if (!isTokenValid || !user.resetPasswordExpiresAt || user.resetPasswordExpiresAt < new Date()) {
+      throw new UnauthorizedException('Invalid or expired reset token.');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    await this.usersService.updatePassword(user.id, hashedPassword);
+    await this.usersService.setResetPasswordToken(user.id, null as unknown as string, new Date(0));
+
+    return {
+      message: 'Password reset successfully.',
+    };
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.usersService.findById(userId, false, false, false);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found.');
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(dto.currentPassword, user.password);
+
+    if (!isCurrentPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect.');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+    await this.usersService.updatePassword(user.id, hashedPassword);
+
+    return {
+      message: 'Password changed successfully.',
+    };
+  }
+
+  async sendVerificationOtp(userId: string) {
+    const user = await this.usersService.findById(userId, false, true);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found.');
+    }
+
+    const lastSentAt = user.emailVerificationLastSentAt;
+    if (lastSentAt && Date.now() - lastSentAt.getTime() < 60 * 1000) {
+      throw new UnauthorizedException('Please wait 60 seconds before requesting a new OTP.');
+    }
+
+    const otp = this.generateOtp();
+    const otpHash = await bcrypt.hash(otp, 10);
+    const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await this.usersService.updateEmailVerificationTokens(
+      user.id,
+      otpHash,
+      otpExpiresAt,
+      new Date(),
+    );
+
+    await this.authEmailService.sendVerificationOtp(user.email, otp);
+
+    return {
+      message: 'Verification OTP sent successfully.',
+    };
+  }
+
+  async verifyEmail(userId: string, dto: VerifyEmailDto) {
+    const user = await this.usersService.findById(userId, false, true);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found.');
+    }
+
+    if (!user.emailVerificationOtpHash || !user.emailVerificationOtpExpiresAt) {
+      throw new UnauthorizedException('No active verification request found.');
+    }
+
+    if (user.emailVerificationAttempts >= 5) {
+      throw new UnauthorizedException('Too many failed attempts. Request a new OTP.');
+    }
+
+    if (user.emailVerificationOtpExpiresAt < new Date()) {
+      throw new UnauthorizedException('Verification OTP has expired.');
+    }
+
+    const isOtpValid = await bcrypt.compare(dto.otp, user.emailVerificationOtpHash);
+
+    if (!isOtpValid) {
+      await this.usersService.updateEmailVerificationTokens(
+        user.id,
+        user.emailVerificationOtpHash,
+        user.emailVerificationOtpExpiresAt,
+        user.emailVerificationLastSentAt,
+      );
+      throw new UnauthorizedException('Invalid OTP.');
+    }
+
+    await this.usersService.markEmailVerified(user.id);
+
+    return {
+      message: 'Email verified successfully.',
+    };
+  }
+
   async logout(userId: string) {
     await this.usersService.updateRefreshToken(userId, null);
 
@@ -228,6 +391,10 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Invalid refresh token.');
     }
+  }
+
+  private generateOtp() {
+    return randomInt(100000, 999999).toString();
   }
 
   private sanitizeUser(user: unknown) {

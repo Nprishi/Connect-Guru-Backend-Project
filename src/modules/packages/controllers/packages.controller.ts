@@ -18,6 +18,12 @@ export class PackagesController {
     return this.packagesService.createPackage(teacherId, createPackageDto);
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getMyPackages(@CurrentUser('sub') teacherId: string) {
+    return this.packagesService.getPackagesForTeacher(teacherId);
+  }
+
   @Get('teacher/:teacherId')
   getPackagesForTeacher(@Param('teacherId') teacherId: string) {
     return this.packagesService.getPackagesForTeacher(teacherId);

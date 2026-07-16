@@ -7,6 +7,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { UsersService } from '../../users/services/users.service';
+import { Booking, BookingDocument } from '../../bookings/schema/booking.schema';
+import { PackageItem, PackageDocument } from '../../packages/schema/package.schema';
 import { CreateStudentProfileDto } from '../dto/create-student-profile.dto';
 import {
   StudentProfile,
@@ -18,6 +20,10 @@ export class StudentsService {
   constructor(
     @InjectModel(StudentProfile.name)
     private readonly studentProfileModel: Model<StudentProfileDocument>,
+    @InjectModel(Booking.name)
+    private readonly bookingModel: Model<BookingDocument>,
+    @InjectModel(PackageItem.name)
+    private readonly packageModel: Model<PackageDocument>,
     private readonly usersService: UsersService,
   ) {}
 
@@ -41,6 +47,24 @@ export class StudentsService {
     return this.studentProfileModel.create({ userId, ...dto });
   }
 
+  async updateProfile(userId: string, payload: Record<string, unknown>) {
+    const profile = await this.studentProfileModel.findOneAndUpdate(
+      { userId },
+      { $set: payload },
+      { new: true },
+    );
+
+    if (!profile) {
+      throw new NotFoundException('Student profile not found.');
+    }
+
+    return profile;
+  }
+
+  async getMe(userId: string) {
+    return this.getProfile(userId);
+  }
+
   async getProfile(userId: string) {
     const profile = await this.studentProfileModel.findOne({ userId });
 
@@ -48,6 +72,29 @@ export class StudentsService {
       throw new NotFoundException('Student profile not found.');
     }
 
-    return profile;
+    const user = await this.usersService.findById(userId);
+
+    return {
+      profile,
+      user,
+    };
+  }
+
+  async getDashboard(userId: string) {
+    const profile = await this.studentProfileModel.findOne({ userId });
+    const bookings = await this.bookingModel
+      .find({ studentId: userId })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .exec();
+
+    return {
+      profile,
+      bookings,
+      stats: {
+        totalBookings: await this.bookingModel.countDocuments({ studentId: userId }),
+        activePackages: await this.packageModel.countDocuments({ teacherId: { $exists: true } }),
+      },
+    };
   }
 }

@@ -10,6 +10,7 @@ import { AUTH_CONSTANTS } from './auth.constants';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { AuthEmailService } from './services/auth-email.service';
 import { AuthService } from './services/auth.service';
 import { SuperAdminSeeder } from './super-admin.seed';
 
@@ -29,6 +30,13 @@ import { SuperAdminSeeder } from './super-admin.seed';
     }),
   ],
   controllers: [AuthController, SuperAdminController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, SuperAdminSeeder],
+  providers: [
+    AuthService,
+    AuthEmailService,
+    JwtStrategy,
+    JwtAuthGuard,
+    RolesGuard,
+    SuperAdminSeeder,
+  ],
 })
 export class AuthModule {}

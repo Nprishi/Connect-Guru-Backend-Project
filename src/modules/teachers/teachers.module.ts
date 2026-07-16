@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { UsersModule } from '../users/users.module';
+import { Booking, BookingSchema } from '../bookings/schema/booking.schema';
 import {
   TeacherProfile,
   TeacherProfileSchema,
@@ -16,6 +17,10 @@ import { TeachersService } from './services/teachers.service';
       {
         name: TeacherProfile.name,
         schema: TeacherProfileSchema,
+      },
+      {
+        name: Booking.name,
+        schema: BookingSchema,
       },
     ]),
   ],
