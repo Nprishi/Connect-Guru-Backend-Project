@@ -64,18 +64,44 @@ export class ChatService {
   }
 
   async getMessages(conversationId: string) {
-    return this.messageModel
+    const messages = await this.messageModel
       .find({ conversationId })
       .sort({ createdAt: 1 })
       .exec();
+
+    return Promise.all(
+      messages.map(async (message) => {
+        const sender = await this.usersService.findById(message.senderId);
+        return {
+          ...message.toObject(),
+          sender,
+        };
+      }),
+    );
   }
 
   async getConversations(userId: string) {
-    return this.conversationModel
+    const conversations = await this.conversationModel
       .find({
         $or: [{ participantOneId: userId }, { participantTwoId: userId }],
       })
       .sort({ updatedAt: -1 })
       .exec();
+
+    return Promise.all(
+      conversations.map(async (conversation) => {
+        const participantId =
+          conversation.participantOneId === userId
+            ? conversation.participantTwoId
+            : conversation.participantOneId;
+
+        const participant = await this.usersService.findById(participantId);
+
+        return {
+          ...conversation.toObject(),
+          participant,
+        };
+      }),
+    );
   }
 }

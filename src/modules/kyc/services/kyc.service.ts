@@ -38,11 +38,32 @@ export class KycService {
   }
 
   async getKycForUser(userId: string) {
-    return this.kycModel.findOne({ userId }).exec();
+    const kyc = await this.kycModel.findOne({ userId }).exec();
+
+    if (!kyc) {
+      return null;
+    }
+
+    const user = await this.usersService.findById(userId);
+
+    return {
+      ...kyc.toObject(),
+      user,
+    };
   }
 
   async getAllKyc() {
-    return this.kycModel.find().exec();
+    const kycs = await this.kycModel.find().sort({ createdAt: -1 }).exec();
+
+    return Promise.all(
+      kycs.map(async (kyc) => {
+        const user = await this.usersService.findById(kyc.userId);
+        return {
+          ...kyc.toObject(),
+          user,
+        };
+      }),
+    );
   }
 
   async reviewKyc(kycId: string, dto: ReviewKycDto) {

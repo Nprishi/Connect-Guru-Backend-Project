@@ -356,13 +356,18 @@ Example:
 
 These backend endpoints support the teacher dashboard and related UI screens:
 
-- Dashboard / home data: `GET /api/cg/auth/profile` and data from teacher profile, bookings, payments, packages, chat.
-- My Students: `GET /api/cg/bookings` plus `GET /api/cg/students/profile/:userId` for student details.
-- My Packages: `GET /api/cg/packages/teacher/:teacherId`
+- Teacher dashboard / home data: `GET /api/cg/teachers/dashboard` plus `GET /api/cg/auth/profile` and the teacher's related bookings, payments, packages, and chat data.
+- Teacher self profile: `GET /api/cg/teachers/me`
+- Teacher profile patch: `PATCH /api/cg/teachers/profile`
+- Teacher availability patch: `PATCH /api/cg/teachers/availability`
+- My Students: `GET /api/cg/teachers/students` and `GET /api/cg/students/profile/:userId` for student details.
+- Teacher reviews: `GET /api/cg/teachers/reviews`
+- My Packages: `GET /api/cg/packages/me` and `GET /api/cg/packages/teacher/:teacherId`
 - Requests: `GET /api/cg/bookings`
 - Earnings: `GET /api/cg/payments`
 - Schedule: `GET /api/cg/bookings`
 - Messages: `GET /api/cg/chat/conversations` and `GET /api/cg/chat/messages/:conversationId`
+- Student dashboard / profile: `GET /api/cg/students/dashboard`, `GET /api/cg/students/me`, `PATCH /api/cg/students/profile`
 - Profile: `GET /api/cg/teachers/profile/:userId` and `POST /api/cg/teachers/profile`
 - Notifications: backend does not expose a dedicated notification endpoint in the current source.
 
