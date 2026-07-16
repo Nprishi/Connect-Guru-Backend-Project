@@ -4,18 +4,11 @@ import { createClient, RedisClientType } from 'redis';
 @Injectable()
 export class RedisService implements OnModuleInit {
   private readonly logger = new Logger(RedisService.name);
-  private client!: RedisClientType;
+  private client?: RedisClientType;
 
   async onModuleInit() {
-    const isProduction = process.env.NODE_ENV === 'production';
-
     this.client = createClient({
-      username: isProduction ? 'default' : undefined,
-      password: process.env.REDIS_PASSWORD,
-      socket: {
-        host: process.env.REDIS_HOST,
-        port: Number(process.env.REDIS_PORT),
-      },
+      url: `redis://:${process.env.REDIS_PASSWORD || ''}@${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}`,
     });
 
     this.client.on('error', (err) => {
@@ -23,23 +16,35 @@ export class RedisService implements OnModuleInit {
     });
 
     await this.client.connect();
-
-    this.logger.log('Step:2 Redis connected successfully');
+    this.logger.log('\n Step 3: Redis connected successfully');
   }
 
   async set(key: string, value: string, ttlSeconds?: number) {
+    if (!this.client) {
+      return;
+    }
+
     if (ttlSeconds) {
       await this.client.set(key, value, { EX: ttlSeconds });
-    } else {
-      await this.client.set(key, value);
+      return;
     }
+
+    await this.client.set(key, value);
   }
 
   async get(key: string) {
+    if (!this.client) {
+      return null;
+    }
+
     return this.client.get(key);
   }
 
   async del(key: string) {
+    if (!this.client) {
+      return;
+    }
+
     await this.client.del(key);
   }
 }
