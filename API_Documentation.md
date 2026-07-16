@@ -148,6 +148,37 @@ Example:
 }
 ```
 
+### Patch teacher profile
+- `PATCH /api/cg/teachers/profile`
+- Auth: yes (JWT)
+- Body: partial teacher profile fields
+
+### Update teacher availability
+- `PATCH /api/cg/teachers/availability`
+- Auth: yes (JWT)
+- Body:
+```json
+{
+  "availability": ["Mon-Fri 6-9pm", "Sat 10am-1pm"]
+}
+```
+
+### Get current teacher profile
+- `GET /api/cg/teachers/me`
+- Auth: yes (JWT)
+
+### Get teacher dashboard summary
+- `GET /api/cg/teachers/dashboard`
+- Auth: yes (JWT)
+
+### Get teacher students
+- `GET /api/cg/teachers/students`
+- Auth: yes (JWT)
+
+### Get teacher reviews
+- `GET /api/cg/teachers/reviews`
+- Auth: yes (JWT)
+
 ### Get teacher profile
 - `GET /api/cg/teachers/profile/:userId`
 - Auth: no
@@ -159,6 +190,7 @@ Example:
   - `subject` (optional)
   - `page` (optional)
   - `limit` (optional)
+  - `sort` (optional)
 
 ## Students
 
@@ -170,6 +202,19 @@ Example:
   - `learningGoals` (string[])
   - `interests` (string[])
   - `bio` (string)
+
+### Patch student profile
+- `PATCH /api/cg/students/profile`
+- Auth: yes (JWT)
+- Body: partial student profile fields
+
+### Get current student profile
+- `GET /api/cg/students/me`
+- Auth: yes (JWT)
+
+### Get student dashboard summary
+- `GET /api/cg/students/dashboard`
+- Auth: yes (JWT)
 
 ### Get student profile
 - `GET /api/cg/students/profile/:userId`
@@ -199,6 +244,10 @@ Example:
   "isActive": true
 }
 ```
+
+### Get current teacher packages
+- `GET /api/cg/packages/me`
+- Auth: yes (JWT)
 
 ### Get packages for teacher
 - `GET /api/cg/packages/teacher/:teacherId`
@@ -275,6 +324,7 @@ Example:
 - `POST /api/cg/payments`
 - Auth: yes (JWT)
 - Body (CreatePaymentDto):
+  - `teacherId` (string)
   - `packageId` (string)
   - `amount` (number)
   - `transactionId` (optional string)
@@ -369,88 +419,13 @@ These backend endpoints support the teacher dashboard and related UI screens:
 - Messages: `GET /api/cg/chat/conversations` and `GET /api/cg/chat/messages/:conversationId`
 - Student dashboard / profile: `GET /api/cg/students/dashboard`, `GET /api/cg/students/me`, `PATCH /api/cg/students/profile`
 - Profile: `GET /api/cg/teachers/profile/:userId` and `POST /api/cg/teachers/profile`
+- Admin overview: `GET /api/cg/admin/dashboard`
 - Notifications: backend does not expose a dedicated notification endpoint in the current source.
 
 ## Notes
 
 - All protected endpoints require `Authorization: Bearer <token>`.
 - File uploads must use `multipart/form-data` with the field name `file`.
-- The current backend has no dedicated `/teacher/dashboard` or `/teacher/my-student` path; UI features are mapped to the above REST endpoints.
-  "price": 50,
-  "durationInHours": 5,
-  "sessions": 5,
-  "isActive": true
-}
-```
-
-- GET /api/cg/packages/teacher/:teacherId
-
-- GET /api/cg/packages/:packageId
-
-
-User END
-
-
-Admin
-
-- GET /api/cg/admin/dashboard
-  - Auth: yes (JWT + Roles.ADMIN)
-
-- GET /api/cg/admin/users
-  - Auth: yes (JWT + Roles.ADMIN)
-
-- PUT /api/cg/admin/users/:userId/status
-  - Auth: yes (JWT + Roles.ADMIN)
-  - Body example:
-
-```json
-{ "status": "active" }
-```
-
-Payments
-
-- POST /api/cg/payments
-  - Auth: yes (JWT)
-  - Body example (CreatePaymentDto):
-
-```json
-{
-  "packageId": "648a1f...",
-  "amount": 50,
-  "transactionId": "txn_123456"
-}
-```
-
-- GET /api/cg/payments
-  - Auth: yes (JWT)
-
-- PUT /api/cg/payments/:paymentId/status
-  - Auth: yes (JWT)
-  - Body example:
-
-```json
-{ "status": "completed" }
-```
-
-Students
-
-- POST /api/cg/students/profile
-  - Auth: yes (JWT)
-  - Body example (CreateStudentProfileDto):
-
-```json
-{
-  "preferredSubjects": ["Math"],
-  "learningGoals": ["Improve algebra"],
-  "interests": ["Robotics"],
-  "bio": "High school student"
-}
-```
-
-- GET /api/cg/students/profile/:userId
-
-Notes
-
-- Authentication: endpoints using `JwtAuthGuard` require `Authorization: Bearer <token>` header.
-- File uploads use `multipart/form-data` with `file` field and are handled via Cloudinary in the codebase.
+- The current backend maps UI dashboard and profile needs through the REST routes listed above rather than through a dedicated `/teacher/dashboard` or `/teacher/my-student` path.
 - DTO names reference files under `src/modules/*/dto` — consult the DTOs for exact schemas.
+- File uploads use `multipart/form-data` with `file` field and are handled via Cloudinary in the codebase.
