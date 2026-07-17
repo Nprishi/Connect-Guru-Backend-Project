@@ -17,6 +17,15 @@ import { SearchService } from '../services/search.service';
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Global search using BM25-style ranking' })
+  @ApiResponse({ status: 200, description: 'Global search results returned' })
+  globalSearch(@Query('q') query: string) {
+    return this.searchService.globalSearch(query);
+  }
+
   @Get('teachers')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

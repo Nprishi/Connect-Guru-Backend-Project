@@ -66,6 +66,85 @@ export class SearchService {
     private readonly studentProfileModel: Model<StudentProfileDocument>,
   ) {}
 
+  async globalSearch(query: string) {
+    const trimmedQuery = query?.trim();
+
+    if (!trimmedQuery) {
+      return {
+        items: [],
+        meta: { page: 1, limit: 10, total: 0, pages: 0 },
+      };
+    }
+
+    const [teachers, packages] = await Promise.all([
+      this.teacherProfileModel.find().lean().exec() as Promise<TeacherProfileLike[]>,
+      this.packageModel.find({ isActive: true }).lean().exec() as Promise<PackageItem[]>,
+    ]);
+
+    const teacherQuery = this.extractTerms([trimmedQuery]);
+
+    const teacherMatches = teachers
+      .map((teacher) => {
+        const docs = this.extractTerms([
+          teacher.subjects,
+          teacher.experience,
+          teacher.availability,
+          teacher.bio,
+        ]);
+        const score = this.calculateBm25Score(
+          docs,
+          teacherQuery,
+          this.buildDocumentFrequency(
+            teachers.map((profile) =>
+              this.extractTerms([
+                profile.subjects,
+                profile.experience,
+                profile.availability,
+                profile.bio,
+              ]),
+            ),
+          ),
+          docs.length || 1,
+          teachers.length || 1,
+        );
+
+        return { teacher, score };
+      })
+      .filter((item) => item.score > 0)
+      .sort((left, right) => right.score - left.score)
+      .slice(0, 10);
+
+    const packageMatches = packages
+      .filter((pkg) => {
+        const haystack = `${pkg.name} ${pkg.description}`.toLowerCase();
+        return haystack.includes(trimmedQuery.toLowerCase());
+      })
+      .slice(0, 10);
+
+    const teacherItems = await Promise.all(
+      teacherMatches.map(async ({ teacher }) => {
+        const user = await this.userModel
+          .findById(teacher.userId)
+          .lean()
+          .exec();
+        return { teacher, user };
+      }),
+    );
+
+    return {
+      items: {
+        teachers: teacherItems,
+        packages: packageMatches,
+      },
+      meta: {
+        page: 1,
+        limit: 10,
+        total: teacherItems.length + packageMatches.length,
+        pages: 1,
+      },
+    };
+  }
+
   async searchTeachers(dto: TeacherSearchDto) {
     const page = dto.page && dto.page > 0 ? dto.page : 1;
     const limit = dto.limit && dto.limit > 0 ? dto.limit : 10;

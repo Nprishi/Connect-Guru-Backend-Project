@@ -176,6 +176,7 @@ Response:
 
 | Method | Path                               | Auth | Role          | Summary                          |
 | ------ | ---------------------------------- | ---: | ------------- | -------------------------------- |
+| GET    | `/api/cg/teachers`                 |   No | Public        | List teachers                    |
 | POST   | `/api/cg/teachers/profile`         |  Yes | Authenticated | Create or update teacher profile |
 | PATCH  | `/api/cg/teachers/profile`         |  Yes | Authenticated | Patch teacher profile            |
 | PATCH  | `/api/cg/teachers/availability`    |  Yes | Authenticated | Update availability              |
@@ -243,6 +244,7 @@ Request:
 
 | Method | Path                             | Auth | Role          | Summary                                  |
 | ------ | -------------------------------- | ---: | ------------- | ---------------------------------------- |
+| GET    | `/api/cg/search?q=`              |  Yes | Authenticated | Global search using BM25-style ranking   |
 | GET    | `/api/cg/search/teachers`        |  Yes | Authenticated | Search teachers with BM25-style ranking  |
 | GET    | `/api/cg/search/packages`        |  Yes | Authenticated | Search packages                          |
 | GET    | `/api/cg/search/recommendations` |  Yes | Authenticated | Get personalized teacher recommendations |
@@ -289,10 +291,13 @@ Response:
 
 | Method | Path                                  | Auth | Role          | Summary                        |
 | ------ | ------------------------------------- | ---: | ------------- | ------------------------------ |
+| GET    | `/api/cg/packages`                    |   No | Public        | List all packages              |
 | POST   | `/api/cg/packages`                    |  Yes | Authenticated | Create a package               |
 | GET    | `/api/cg/packages/me`                 |  Yes | Authenticated | Get current teacher's packages |
 | GET    | `/api/cg/packages/teacher/:teacherId` |   No | Public        | Get teacher's public packages  |
 | GET    | `/api/cg/packages/:packageId`         |   No | Public        | Get package details            |
+| PATCH  | `/api/cg/packages/:packageId`         |  Yes | Authenticated | Update package                 |
+| DELETE | `/api/cg/packages/:packageId`         |  Yes | Authenticated | Delete package                 |
 
 ### Example: Create package
 
