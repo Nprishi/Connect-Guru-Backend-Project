@@ -6,6 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PackageSearchDto } from '../dto/package-search.dto';
 import { TeacherSearchDto } from '../dto/teacher-search.dto';
@@ -32,5 +33,17 @@ export class SearchController {
   @ApiResponse({ status: 200, description: 'Package search results returned' })
   searchPackages(@Query() dto: PackageSearchDto) {
     return this.searchService.searchPackages(dto);
+  }
+
+  @Get('recommendations')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      'Get personalized teacher recommendations for the current student using collaborative filtering',
+  })
+  @ApiResponse({ status: 200, description: 'Recommended teachers returned' })
+  getRecommendations(@CurrentUser('sub') studentId: string) {
+    return this.searchService.recommendTeachers(studentId);
   }
 }
