@@ -18,6 +18,8 @@ import {
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CreateTeacherProfileDto } from '../dto/create-teacher-profile.dto';
+import { UpdateTeacherProfileDto } from '../dto/update-teacher-profile.dto';
+import { TeacherSearchDto } from '../../search/dto/teacher-search.dto';
 import { TeachersService } from '../services/teachers.service';
 
 @ApiTags('Teachers')
@@ -47,9 +49,9 @@ export class TeachersController {
   @ApiResponse({ status: 200, description: 'Teacher profile patched' })
   patchProfile(
     @CurrentUser('sub') userId: string,
-    @Body() payload: Record<string, unknown>,
+    @Body() dto: UpdateTeacherProfileDto,
   ) {
-    return this.teachersService.updateProfile(userId, payload);
+    return this.teachersService.updateProfile(userId, dto);
   }
 
   @Patch('availability')
@@ -106,12 +108,7 @@ export class TeachersController {
   }
 
   @Get()
-  searchTeachers(
-    @Query('subject') subject?: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('sort') sort?: string,
-  ) {
-    return this.teachersService.searchTeachers({ subject, page, limit, sort });
+  searchTeachers(@Query() dto: TeacherSearchDto) {
+    return this.teachersService.searchTeachers(dto);
   }
 }

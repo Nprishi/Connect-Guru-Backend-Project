@@ -6,6 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { NotificationsService } from '../../notifications/services/notifications.service';
 import { UsersService } from '../../users/services/users.service';
 import { ReviewKycDto, SubmitKycDto } from '../dto/submit-kyc.dto';
 import { Kyc, KycDocument, KycStatus } from '../schema/kyc.schema';
@@ -15,6 +16,7 @@ export class KycService {
   constructor(
     @InjectModel(Kyc.name) private readonly kycModel: Model<KycDocument>,
     private readonly usersService: UsersService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async submitKyc(userId: string, dto: SubmitKycDto) {
@@ -75,6 +77,12 @@ export class KycService {
 
     kyc.status = dto.status as KycStatus;
     kyc.adminNote = dto.adminNote ?? null;
-    return kyc.save();
+    const saved = await kyc.save();
+
+    if (dto.status === KycStatus.APPROVED) {
+      await this.notificationsService.notifyKycApproved(kyc.userId);
+    }
+
+    return saved;
   }
 }

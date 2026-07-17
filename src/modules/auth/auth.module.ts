@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
+import { NotificationsModule } from '../notifications/notifications.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './controllers/auth.controller';
 import { SuperAdminController } from './controllers/super-admin.controller';
@@ -17,6 +18,7 @@ import { SuperAdminSeeder } from './super-admin.seed';
 @Module({
   imports: [
     UsersModule,
+    NotificationsModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

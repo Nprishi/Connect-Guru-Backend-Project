@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { UserRole } from '../../auth/enums/user-role.enum';
+import { UpdateUserStatusDto } from '../dto/update-user-status.dto';
 import { AdminService } from '../services/admin.service';
 
 @Controller('admin')
@@ -29,8 +30,8 @@ export class AdminController {
   @Roles(UserRole.ADMIN)
   updateUserStatus(
     @Param('userId') userId: string,
-    @Body('status') status: string,
+    @Body() dto: UpdateUserStatusDto,
   ) {
-    return this.adminService.updateUserStatus(userId, status);
+    return this.adminService.updateUserStatus(userId, dto.status);
   }
 }

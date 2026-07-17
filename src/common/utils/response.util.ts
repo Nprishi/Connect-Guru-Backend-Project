@@ -7,7 +7,11 @@ export class ResponseUtil {
     };
   }
 
-  static paginated<T>(message: string, data: T[], meta: Record<string, unknown>) {
+  static paginated<T>(
+    message: string,
+    data: T[],
+    meta: Record<string, unknown>,
+  ) {
     return {
       success: true,
       message,

@@ -23,6 +23,7 @@ import { VerifyEmailDto } from '../dto/verify-email.dto';
 import { UserRole } from '../enums/user-role.enum';
 import { UserStatus } from '../enums/user-status.enum';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { NotificationsService } from '../../notifications/services/notifications.service';
 import { AuthEmailService } from './auth-email.service';
 
 @Injectable()
@@ -32,6 +33,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly authEmailService: AuthEmailService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -73,6 +75,7 @@ export class AuthService {
     );
 
     await this.authEmailService.sendVerificationOtp(createdUser.email, otp);
+    await this.notificationsService.notifyUserRegistered(createdUser.id);
 
     const { accessToken, refreshToken } = await this.generateTokens(createdUser);
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
@@ -113,6 +116,7 @@ export class AuthService {
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
     await this.usersService.updateRefreshToken(user.id, hashedRefreshToken);
     await this.usersService.updateLastLogin(user.id);
+    await this.notificationsService.notifyUserLoggedIn(user.id);
 
     return {
       message: 'Login successful.',

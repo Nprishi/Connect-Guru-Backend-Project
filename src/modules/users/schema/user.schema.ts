@@ -128,6 +128,18 @@ export class User {
   emailVerificationAttempts!: number;
 
   @Prop({
+    type: Number,
+    default: 0,
+  })
+  rating!: number;
+
+  @Prop({
+    type: Number,
+    default: 0,
+  })
+  totalReviews!: number;
+
+  @Prop({
     type: Date,
     default: null,
   })

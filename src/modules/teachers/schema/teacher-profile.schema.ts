@@ -23,6 +23,12 @@ export class TeacherProfile {
   @Prop({ type: Number, default: 0 })
   hourlyRate!: number;
 
+  @Prop({ type: Number, default: 0 })
+  rating!: number;
+
+  @Prop({ type: Number, default: 0 })
+  totalReviews!: number;
+
   @Prop({ type: String, default: null })
   bio!: string | null;
 }

@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { NotificationsService } from '../../notifications/services/notifications.service';
 import { UsersService } from '../../users/services/users.service';
 import { CreatePaymentDto } from '../dto/create-payment.dto';
 import { Payment, PaymentDocument, PaymentStatus } from '../schema/payment.schema';
@@ -11,6 +12,7 @@ export class PaymentsService {
   constructor(
     @InjectModel(Payment.name) private readonly paymentModel: Model<PaymentDocument>,
     private readonly usersService: UsersService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async createPayment(studentId: string, dto: CreatePaymentDto) {
@@ -20,7 +22,7 @@ export class PaymentsService {
       throw new UnauthorizedException('Student not found.');
     }
 
-    return this.paymentModel.create({
+    const payment = await this.paymentModel.create({
       studentId,
       teacherId: dto.teacherId,
       packageId: dto.packageId,
@@ -28,6 +30,9 @@ export class PaymentsService {
       transactionId: dto.transactionId ?? null,
       status: PaymentStatus.PENDING,
     });
+
+    await this.notificationsService.notifyPackagePurchased(studentId, dto.packageId);
+    return payment;
   }
 
   async getPaymentsForUser(userId: string) {
@@ -45,6 +50,12 @@ export class PaymentsService {
     }
 
     payment.status = status;
-    return payment.save();
+    const saved = await payment.save();
+
+    if (status === PaymentStatus.COMPLETED) {
+      await this.notificationsService.notifyPaymentCompleted(payment.studentId, payment.id, payment.amount);
+    }
+
+    return saved;
   }
 }

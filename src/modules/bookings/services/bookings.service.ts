@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { NotificationsService } from '../../notifications/services/notifications.service';
 import { UsersService } from '../../users/services/users.service';
 import { Booking, BookingDocument, BookingStatus } from '../schema/booking.schema';
 import { CreateBookingDto, UpdateBookingStatusDto } from '../dto/create-booking.dto';
@@ -11,6 +12,7 @@ export class BookingsService {
   constructor(
     @InjectModel(Booking.name) private readonly bookingModel: Model<BookingDocument>,
     private readonly usersService: UsersService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async createBooking(studentId: string, dto: CreateBookingDto) {
@@ -20,7 +22,7 @@ export class BookingsService {
       throw new UnauthorizedException('Student not found.');
     }
 
-    return this.bookingModel.create({
+    const booking = await this.bookingModel.create({
       studentId,
       teacherId: dto.teacherId,
       subject: dto.subject,
@@ -28,6 +30,9 @@ export class BookingsService {
       notes: dto.notes ?? null,
       status: BookingStatus.PENDING,
     });
+
+    await this.notificationsService.notifyBookingCreated(studentId, dto.teacherId, booking.id);
+    return booking;
   }
 
   async getBookingsForUser(userId: string) {
@@ -45,6 +50,16 @@ export class BookingsService {
     }
 
     booking.status = dto.status;
-    return booking.save();
+    const saved = await booking.save();
+
+    if (dto.status === BookingStatus.ACCEPTED) {
+      await this.notificationsService.notifyBookingAccepted(booking.studentId, booking.teacherId, booking.id);
+    }
+
+    if (dto.status === BookingStatus.REJECTED) {
+      await this.notificationsService.notifyBookingRejected(booking.studentId, booking.teacherId, booking.id);
+    }
+
+    return saved;
   }
 }

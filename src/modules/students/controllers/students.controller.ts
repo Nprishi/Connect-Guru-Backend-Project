@@ -4,6 +4,7 @@ import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/co
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CreateStudentProfileDto } from '../dto/create-student-profile.dto';
+import { UpdateStudentProfileDto } from '../dto/update-student-profile.dto';
 import { StudentsService } from '../services/students.service';
 
 @Controller('students')
@@ -26,9 +27,9 @@ export class StudentsController {
   @UseGuards(JwtAuthGuard)
   patchProfile(
     @CurrentUser('sub') userId: string,
-    @Body() payload: Record<string, unknown>,
+    @Body() dto: UpdateStudentProfileDto,
   ) {
-    return this.studentsService.updateProfile(userId, payload);
+    return this.studentsService.updateProfile(userId, dto);
   }
 
   @Get('me')

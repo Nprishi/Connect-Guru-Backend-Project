@@ -9,6 +9,7 @@ import { Model, SortOrder } from 'mongoose';
 import { UsersService } from '../../users/services/users.service';
 import { Booking, BookingDocument } from '../../bookings/schema/booking.schema';
 import { CreateTeacherProfileDto } from '../dto/create-teacher-profile.dto';
+import { UpdateTeacherProfileDto } from '../dto/update-teacher-profile.dto';
 import {
   TeacherProfile,
   TeacherProfileDocument,
@@ -44,10 +45,10 @@ export class TeachersService {
     return this.teacherProfileModel.create({ userId, ...dto });
   }
 
-  async updateProfile(userId: string, payload: Record<string, unknown>) {
+  async updateProfile(userId: string, dto: UpdateTeacherProfileDto) {
     const profile = await this.teacherProfileModel.findOneAndUpdate(
       { userId },
-      { $set: payload },
+      { $set: dto },
       { new: true },
     );
 

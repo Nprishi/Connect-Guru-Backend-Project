@@ -10,6 +10,7 @@ import { UsersService } from '../../users/services/users.service';
 import { Booking, BookingDocument } from '../../bookings/schema/booking.schema';
 import { PackageItem, PackageDocument } from '../../packages/schema/package.schema';
 import { CreateStudentProfileDto } from '../dto/create-student-profile.dto';
+import { UpdateStudentProfileDto } from '../dto/update-student-profile.dto';
 import {
   StudentProfile,
   StudentProfileDocument,
@@ -47,10 +48,10 @@ export class StudentsService {
     return this.studentProfileModel.create({ userId, ...dto });
   }
 
-  async updateProfile(userId: string, payload: Record<string, unknown>) {
+  async updateProfile(userId: string, dto: UpdateStudentProfileDto) {
     const profile = await this.studentProfileModel.findOneAndUpdate(
       { userId },
-      { $set: payload },
+      { $set: dto },
       { new: true },
     );
 

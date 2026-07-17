@@ -423,7 +423,6 @@ These backend endpoints support the teacher dashboard and related UI screens:
 - Notifications: backend does not expose a dedicated notification endpoint in the current source.
 
 ## Notes
-
 - All protected endpoints require `Authorization: Bearer <token>`.
 - File uploads must use `multipart/form-data` with the field name `file`.
 - The current backend maps UI dashboard and profile needs through the REST routes listed above rather than through a dedicated `/teacher/dashboard` or `/teacher/my-student` path.
