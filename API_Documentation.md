@@ -12,21 +12,23 @@
 
 ## 2. Authentication and Account
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| POST | `/api/cg/auth/register` | No | Public | Register a new student or teacher |
-| POST | `/api/cg/auth/login` | No | Public | Login and get JWT |
-| POST | `/api/cg/auth/refresh-token` | No | Public | Refresh access token |
-| POST | `/api/cg/auth/logout` | Yes | Any authenticated user | Logout current session |
-| GET | `/api/cg/auth/profile` | Yes | Any authenticated user | Get authenticated user profile |
-| POST | `/api/cg/auth/forgot-password` | No | Public | Request password reset |
-| POST | `/api/cg/auth/reset-password` | No | Public | Reset password with token |
-| PATCH | `/api/cg/auth/change-password` | Yes | Any authenticated user | Change password |
-| POST | `/api/cg/auth/verify-email` | Yes | Any authenticated user | Verify email |
-| POST | `/api/cg/auth/resend-verification` | Yes | Any authenticated user | Resend verification email |
+| Method | Path                               | Auth | Role                   | Summary                           |
+| ------ | ---------------------------------- | ---: | ---------------------- | --------------------------------- |
+| POST   | `/api/cg/auth/register`            |   No | Public                 | Register a new student or teacher |
+| POST   | `/api/cg/auth/login`               |   No | Public                 | Login and get JWT                 |
+| POST   | `/api/cg/auth/refresh-token`       |   No | Public                 | Refresh access token              |
+| POST   | `/api/cg/auth/logout`              |  Yes | Any authenticated user | Logout current session            |
+| GET    | `/api/cg/auth/profile`             |  Yes | Any authenticated user | Get authenticated user profile    |
+| POST   | `/api/cg/auth/forgot-password`     |   No | Public                 | Request password reset            |
+| POST   | `/api/cg/auth/reset-password`      |   No | Public                 | Reset password with token         |
+| PATCH  | `/api/cg/auth/change-password`     |  Yes | Any authenticated user | Change password                   |
+| POST   | `/api/cg/auth/verify-email`        |  Yes | Any authenticated user | Verify email                      |
+| POST   | `/api/cg/auth/resend-verification` |  Yes | Any authenticated user | Resend verification email         |
 
 ### Example: Register
+
 Request:
+
 ```json
 {
   "firstName": "Jane",
@@ -40,6 +42,7 @@ Request:
 ```
 
 Response:
+
 ```json
 {
   "message": "User registered successfully",
@@ -52,7 +55,9 @@ Response:
 ```
 
 ### Example: Login
+
 Request:
+
 ```json
 {
   "email": "jane.doe@example.com",
@@ -61,6 +66,7 @@ Request:
 ```
 
 Response:
+
 ```json
 {
   "accessToken": "<jwt-access-token>",
@@ -77,12 +83,14 @@ Response:
 
 ## 3. Super Admin
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| POST | `/api/cg/superadmin/t1/login` | No | Public | Super admin login |
+| Method | Path                          | Auth | Role   | Summary           |
+| ------ | ----------------------------- | ---: | ------ | ----------------- |
+| POST   | `/api/cg/superadmin/t1/login` |   No | Public | Super admin login |
 
 ### Example: Super admin login
+
 Request:
+
 ```json
 {
   "email": "example@gmail.com",
@@ -92,6 +100,7 @@ Request:
 ```
 
 Response:
+
 ```json
 {
   "accessToken": "<super-admin-token>"
@@ -102,14 +111,16 @@ Response:
 
 ## 4. Admin
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| GET | `/api/cg/admin/dashboard` | Yes | ADMIN | Admin dashboard overview |
-| GET | `/api/cg/admin/users` | Yes | ADMIN | List users |
-| PUT | `/api/cg/admin/users/:userId/status` | Yes | ADMIN | Update user status |
+| Method | Path                                 | Auth | Role  | Summary                  |
+| ------ | ------------------------------------ | ---: | ----- | ------------------------ |
+| GET    | `/api/cg/admin/dashboard`            |  Yes | ADMIN | Admin dashboard overview |
+| GET    | `/api/cg/admin/users`                |  Yes | ADMIN | List users               |
+| PUT    | `/api/cg/admin/users/:userId/status` |  Yes | ADMIN | Update user status       |
 
 ### Example: Update user status
+
 Request:
+
 ```json
 {
   "status": "active"
@@ -117,6 +128,7 @@ Request:
 ```
 
 Response:
+
 ```json
 {
   "message": "User status updated successfully"
@@ -127,17 +139,19 @@ Response:
 
 ## 5. Users
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| GET | `/api/cg/users/profile` | Yes | Any authenticated user | Get current user profile |
-| PATCH | `/api/cg/users/profile` | Yes | Any authenticated user | Update current user profile |
-| DELETE | `/api/cg/users/account` | Yes | Any authenticated user | Delete account |
-| GET | `/api/cg/users/settings` | Yes | Any authenticated user | Get user settings |
-| PATCH | `/api/cg/users/settings` | Yes | Any authenticated user | Update user settings |
-| POST | `/api/cg/users/avatar` | Yes | Any authenticated user | Upload avatar |
+| Method | Path                     | Auth | Role                   | Summary                     |
+| ------ | ------------------------ | ---: | ---------------------- | --------------------------- |
+| GET    | `/api/cg/users/profile`  |  Yes | Any authenticated user | Get current user profile    |
+| PATCH  | `/api/cg/users/profile`  |  Yes | Any authenticated user | Update current user profile |
+| DELETE | `/api/cg/users/account`  |  Yes | Any authenticated user | Delete account              |
+| GET    | `/api/cg/users/settings` |  Yes | Any authenticated user | Get user settings           |
+| PATCH  | `/api/cg/users/settings` |  Yes | Any authenticated user | Update user settings        |
+| POST   | `/api/cg/users/avatar`   |  Yes | Any authenticated user | Upload avatar               |
 
 ### Example: Upload avatar
+
 Request:
+
 ```http
 POST /api/cg/users/avatar
 Content-Type: multipart/form-data
@@ -145,9 +159,11 @@ Authorization: Bearer <token>
 ```
 
 Form field:
+
 - `file`: image file
 
 Response:
+
 ```json
 {
   "avatarUrl": "https://res.cloudinary.com/.../avatar.jpg"
@@ -158,19 +174,21 @@ Response:
 
 ## 6. Teachers
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| POST | `/api/cg/teachers/profile` | Yes | Authenticated | Create or update teacher profile |
-| PATCH | `/api/cg/teachers/profile` | Yes | Authenticated | Patch teacher profile |
-| PATCH | `/api/cg/teachers/availability` | Yes | Authenticated | Update availability |
-| GET | `/api/cg/teachers/me` | Yes | Authenticated | Get current teacher profile |
-| GET | `/api/cg/teachers/dashboard` | Yes | Authenticated | Get teacher dashboard summary |
-| GET | `/api/cg/teachers/students` | Yes | Authenticated | List teacher's students |
-| GET | `/api/cg/teachers/reviews` | Yes | Authenticated | List teacher reviews |
-| GET | `/api/cg/teachers/profile/:userId` | No | Public | View teacher public profile |
+| Method | Path                               | Auth | Role          | Summary                          |
+| ------ | ---------------------------------- | ---: | ------------- | -------------------------------- |
+| POST   | `/api/cg/teachers/profile`         |  Yes | Authenticated | Create or update teacher profile |
+| PATCH  | `/api/cg/teachers/profile`         |  Yes | Authenticated | Patch teacher profile            |
+| PATCH  | `/api/cg/teachers/availability`    |  Yes | Authenticated | Update availability              |
+| GET    | `/api/cg/teachers/me`              |  Yes | Authenticated | Get current teacher profile      |
+| GET    | `/api/cg/teachers/dashboard`       |  Yes | Authenticated | Get teacher dashboard summary    |
+| GET    | `/api/cg/teachers/students`        |  Yes | Authenticated | List teacher's students          |
+| GET    | `/api/cg/teachers/reviews`         |  Yes | Authenticated | List teacher reviews             |
+| GET    | `/api/cg/teachers/profile/:userId` |   No | Public        | View teacher public profile      |
 
 ### Example: Create teacher profile
+
 Request:
+
 ```json
 {
   "subjects": ["Math", "Physics"],
@@ -183,6 +201,7 @@ Request:
 ```
 
 Response:
+
 ```json
 {
   "message": "Teacher profile created successfully",
@@ -197,16 +216,18 @@ Response:
 
 ## 7. Students
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| POST | `/api/cg/students/profile` | Yes | Authenticated | Create or update student profile |
-| PATCH | `/api/cg/students/profile` | Yes | Authenticated | Patch student profile |
-| GET | `/api/cg/students/me` | Yes | Authenticated | Get current student profile |
-| GET | `/api/cg/students/dashboard` | Yes | Authenticated | Get student dashboard summary |
-| GET | `/api/cg/students/profile/:userId` | No | Public | View student public profile |
+| Method | Path                               | Auth | Role          | Summary                          |
+| ------ | ---------------------------------- | ---: | ------------- | -------------------------------- |
+| POST   | `/api/cg/students/profile`         |  Yes | Authenticated | Create or update student profile |
+| PATCH  | `/api/cg/students/profile`         |  Yes | Authenticated | Patch student profile            |
+| GET    | `/api/cg/students/me`              |  Yes | Authenticated | Get current student profile      |
+| GET    | `/api/cg/students/dashboard`       |  Yes | Authenticated | Get student dashboard summary    |
+| GET    | `/api/cg/students/profile/:userId` |   No | Public        | View student public profile      |
 
 ### Example: Student profile payload
+
 Request:
+
 ```json
 {
   "preferredSubjects": ["Math"],
@@ -220,20 +241,23 @@ Request:
 
 ## 8. Search
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| GET | `/api/cg/search/teachers` | Yes | Authenticated | Search teachers with BM25-style ranking |
-| GET | `/api/cg/search/packages` | Yes | Authenticated | Search packages |
-| GET | `/api/cg/search/recommendations` | Yes | Authenticated | Get personalized teacher recommendations |
+| Method | Path                             | Auth | Role          | Summary                                  |
+| ------ | -------------------------------- | ---: | ------------- | ---------------------------------------- |
+| GET    | `/api/cg/search/teachers`        |  Yes | Authenticated | Search teachers with BM25-style ranking  |
+| GET    | `/api/cg/search/packages`        |  Yes | Authenticated | Search packages                          |
+| GET    | `/api/cg/search/recommendations` |  Yes | Authenticated | Get personalized teacher recommendations |
 
 ### Example: Search teachers
+
 Request:
+
 ```http
 GET /api/cg/search/teachers?subject=math&minPrice=10&maxPrice=30&rating=4&page=1&limit=10
 Authorization: Bearer <token>
 ```
 
 Response:
+
 ```json
 {
   "items": [
@@ -263,15 +287,17 @@ Response:
 
 ## 9. Packages
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| POST | `/api/cg/packages` | Yes | Authenticated | Create a package |
-| GET | `/api/cg/packages/me` | Yes | Authenticated | Get current teacher's packages |
-| GET | `/api/cg/packages/teacher/:teacherId` | No | Public | Get teacher's public packages |
-| GET | `/api/cg/packages/:packageId` | No | Public | Get package details |
+| Method | Path                                  | Auth | Role          | Summary                        |
+| ------ | ------------------------------------- | ---: | ------------- | ------------------------------ |
+| POST   | `/api/cg/packages`                    |  Yes | Authenticated | Create a package               |
+| GET    | `/api/cg/packages/me`                 |  Yes | Authenticated | Get current teacher's packages |
+| GET    | `/api/cg/packages/teacher/:teacherId` |   No | Public        | Get teacher's public packages  |
+| GET    | `/api/cg/packages/:packageId`         |   No | Public        | Get package details            |
 
 ### Example: Create package
+
 Request:
+
 ```json
 {
   "name": "Starter Pack",
@@ -284,6 +310,7 @@ Request:
 ```
 
 Response:
+
 ```json
 {
   "message": "Package created successfully",
@@ -298,14 +325,16 @@ Response:
 
 ## 10. Bookings
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| POST | `/api/cg/bookings` | Yes | Authenticated | Create booking |
-| GET | `/api/cg/bookings` | Yes | Authenticated | Get bookings for current user |
-| PUT | `/api/cg/bookings/:bookingId/status` | Yes | Authenticated | Update booking status |
+| Method | Path                                 | Auth | Role          | Summary                       |
+| ------ | ------------------------------------ | ---: | ------------- | ----------------------------- |
+| POST   | `/api/cg/bookings`                   |  Yes | Authenticated | Create booking                |
+| GET    | `/api/cg/bookings`                   |  Yes | Authenticated | Get bookings for current user |
+| PUT    | `/api/cg/bookings/:bookingId/status` |  Yes | Authenticated | Update booking status         |
 
 ### Example: Create booking
+
 Request:
+
 ```json
 {
   "teacherId": "6412f9...",
@@ -316,6 +345,7 @@ Request:
 ```
 
 Response:
+
 ```json
 {
   "message": "Booking created successfully",
@@ -331,14 +361,16 @@ Response:
 
 ## 11. Chat
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| POST | `/api/cg/chat/messages` | Yes | Authenticated | Send a message |
-| GET | `/api/cg/chat/conversations` | Yes | Authenticated | Get conversations |
-| GET | `/api/cg/chat/messages/:conversationId` | Yes | Authenticated | Get messages for a conversation |
+| Method | Path                                    | Auth | Role          | Summary                         |
+| ------ | --------------------------------------- | ---: | ------------- | ------------------------------- |
+| POST   | `/api/cg/chat/messages`                 |  Yes | Authenticated | Send a message                  |
+| GET    | `/api/cg/chat/conversations`            |  Yes | Authenticated | Get conversations               |
+| GET    | `/api/cg/chat/messages/:conversationId` |  Yes | Authenticated | Get messages for a conversation |
 
 ### Example: Send message
+
 Request:
+
 ```json
 {
   "recipientId": "6412f9...",
@@ -347,6 +379,7 @@ Request:
 ```
 
 Response:
+
 ```json
 {
   "message": "Message sent successfully"
@@ -357,14 +390,16 @@ Response:
 
 ## 12. Payments
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| POST | `/api/cg/payments` | Yes | Authenticated | Create payment |
-| GET | `/api/cg/payments` | Yes | Authenticated | Get payments for current user |
-| PUT | `/api/cg/payments/:paymentId/status` | Yes | Authenticated | Update payment status |
+| Method | Path                                 | Auth | Role          | Summary                       |
+| ------ | ------------------------------------ | ---: | ------------- | ----------------------------- |
+| POST   | `/api/cg/payments`                   |  Yes | Authenticated | Create payment                |
+| GET    | `/api/cg/payments`                   |  Yes | Authenticated | Get payments for current user |
+| PUT    | `/api/cg/payments/:paymentId/status` |  Yes | Authenticated | Update payment status         |
 
 ### Example: Create payment
+
 Request:
+
 ```json
 {
   "teacherId": "6412f9...",
@@ -375,6 +410,7 @@ Request:
 ```
 
 Response:
+
 ```json
 {
   "message": "Payment created successfully",
@@ -389,26 +425,28 @@ Response:
 
 ## 13. Analytics
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| GET | `/api/cg/analytics/student` | Yes | Authenticated | Student dashboard analytics |
-| GET | `/api/cg/analytics/teacher` | Yes | Authenticated | Teacher dashboard analytics |
-| GET | `/api/cg/analytics/admin` | Yes | ADMIN | Admin analytics summary |
+| Method | Path                        | Auth | Role          | Summary                     |
+| ------ | --------------------------- | ---: | ------------- | --------------------------- |
+| GET    | `/api/cg/analytics/student` |  Yes | Authenticated | Student dashboard analytics |
+| GET    | `/api/cg/analytics/teacher` |  Yes | Authenticated | Teacher dashboard analytics |
+| GET    | `/api/cg/analytics/admin`   |  Yes | ADMIN         | Admin analytics summary     |
 
 ---
 
 ## 14. KYC
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| POST | `/api/cg/kyc` | Yes | Authenticated | Submit KYC |
-| POST | `/api/cg/kyc/upload` | Yes | Authenticated | Upload KYC document |
-| GET | `/api/cg/kyc` | Yes | Authenticated | Get current user's KYC |
-| GET | `/api/cg/kyc/admin` | Yes | ADMIN | Get all KYC records |
-| PUT | `/api/cg/kyc/:kycId/review` | Yes | ADMIN | Review KYC |
+| Method | Path                        | Auth | Role          | Summary                |
+| ------ | --------------------------- | ---: | ------------- | ---------------------- |
+| POST   | `/api/cg/kyc`               |  Yes | Authenticated | Submit KYC             |
+| POST   | `/api/cg/kyc/upload`        |  Yes | Authenticated | Upload KYC document    |
+| GET    | `/api/cg/kyc`               |  Yes | Authenticated | Get current user's KYC |
+| GET    | `/api/cg/kyc/admin`         |  Yes | ADMIN         | Get all KYC records    |
+| PUT    | `/api/cg/kyc/:kycId/review` |  Yes | ADMIN         | Review KYC             |
 
 ### Example: Submit KYC
+
 Request:
+
 ```json
 {
   "documentType": "passport",
@@ -417,6 +455,7 @@ Request:
 ```
 
 Response:
+
 ```json
 {
   "message": "KYC submitted successfully"
@@ -427,59 +466,61 @@ Response:
 
 ## 15. Categories and Subjects
 
-| Module | Method | Path | Auth | Role | Summary |
-|---|---|---|---:|---|---|
-| Categories | POST | `/api/cg/categories` | Yes | ADMIN | Create category |
-| Categories | GET | `/api/cg/categories` | Yes | Any authenticated user | List categories |
-| Categories | GET | `/api/cg/categories/:categoryId` | Yes | Any authenticated user | Get category by id |
-| Categories | PATCH | `/api/cg/categories/:categoryId` | Yes | ADMIN | Update category |
-| Categories | DELETE | `/api/cg/categories/:categoryId` | Yes | ADMIN | Delete category |
-| Subjects | POST | `/api/cg/subjects` | Yes | ADMIN | Create subject |
-| Subjects | GET | `/api/cg/subjects` | Yes | Any authenticated user | List subjects |
-| Subjects | GET | `/api/cg/subjects/:subjectId` | Yes | Any authenticated user | Get subject by id |
-| Subjects | PATCH | `/api/cg/subjects/:subjectId` | Yes | ADMIN | Update subject |
-| Subjects | DELETE | `/api/cg/subjects/:subjectId` | Yes | ADMIN | Delete subject |
+| Module     | Method | Path                             | Auth | Role                   | Summary            |
+| ---------- | ------ | -------------------------------- | ---: | ---------------------- | ------------------ |
+| Categories | POST   | `/api/cg/categories`             |  Yes | ADMIN                  | Create category    |
+| Categories | GET    | `/api/cg/categories`             |  Yes | Any authenticated user | List categories    |
+| Categories | GET    | `/api/cg/categories/:categoryId` |  Yes | Any authenticated user | Get category by id |
+| Categories | PATCH  | `/api/cg/categories/:categoryId` |  Yes | ADMIN                  | Update category    |
+| Categories | DELETE | `/api/cg/categories/:categoryId` |  Yes | ADMIN                  | Delete category    |
+| Subjects   | POST   | `/api/cg/subjects`               |  Yes | ADMIN                  | Create subject     |
+| Subjects   | GET    | `/api/cg/subjects`               |  Yes | Any authenticated user | List subjects      |
+| Subjects   | GET    | `/api/cg/subjects/:subjectId`    |  Yes | Any authenticated user | Get subject by id  |
+| Subjects   | PATCH  | `/api/cg/subjects/:subjectId`    |  Yes | ADMIN                  | Update subject     |
+| Subjects   | DELETE | `/api/cg/subjects/:subjectId`    |  Yes | ADMIN                  | Delete subject     |
 
 ---
 
 ## 16. Notifications
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| GET | `/api/cg/notifications` | Yes | Any authenticated user | Get notifications |
-| GET | `/api/cg/notifications/unread-count` | Yes | Any authenticated user | Get unread count |
-| PATCH | `/api/cg/notifications/:notificationId/read` | Yes | Any authenticated user | Mark one as read |
-| PATCH | `/api/cg/notifications/read-all` | Yes | Any authenticated user | Mark all as read |
-| DELETE | `/api/cg/notifications/:notificationId` | Yes | Any authenticated user | Delete notification |
+| Method | Path                                         | Auth | Role                   | Summary             |
+| ------ | -------------------------------------------- | ---: | ---------------------- | ------------------- |
+| GET    | `/api/cg/notifications`                      |  Yes | Any authenticated user | Get notifications   |
+| GET    | `/api/cg/notifications/unread-count`         |  Yes | Any authenticated user | Get unread count    |
+| PATCH  | `/api/cg/notifications/:notificationId/read` |  Yes | Any authenticated user | Mark one as read    |
+| PATCH  | `/api/cg/notifications/read-all`             |  Yes | Any authenticated user | Mark all as read    |
+| DELETE | `/api/cg/notifications/:notificationId`      |  Yes | Any authenticated user | Delete notification |
 
 ---
 
 ## 17. Sessions
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| POST | `/api/cg/sessions` | Yes | Authenticated | Create session |
-| GET | `/api/cg/sessions` | Yes | Authenticated | Get all sessions for current user |
-| GET | `/api/cg/sessions/student` | Yes | Authenticated | Get student sessions |
-| GET | `/api/cg/sessions/teacher` | Yes | Authenticated | Get teacher sessions |
-| PATCH | `/api/cg/sessions/:sessionId/start` | Yes | Authenticated | Start session |
-| PATCH | `/api/cg/sessions/:sessionId/end` | Yes | Authenticated | End session |
-| PATCH | `/api/cg/sessions/:sessionId/cancel` | Yes | Authenticated | Cancel session |
+| Method | Path                                 | Auth | Role          | Summary                           |
+| ------ | ------------------------------------ | ---: | ------------- | --------------------------------- |
+| POST   | `/api/cg/sessions`                   |  Yes | Authenticated | Create session                    |
+| GET    | `/api/cg/sessions`                   |  Yes | Authenticated | Get all sessions for current user |
+| GET    | `/api/cg/sessions/student`           |  Yes | Authenticated | Get student sessions              |
+| GET    | `/api/cg/sessions/teacher`           |  Yes | Authenticated | Get teacher sessions              |
+| PATCH  | `/api/cg/sessions/:sessionId/start`  |  Yes | Authenticated | Start session                     |
+| PATCH  | `/api/cg/sessions/:sessionId/end`    |  Yes | Authenticated | End session                       |
+| PATCH  | `/api/cg/sessions/:sessionId/cancel` |  Yes | Authenticated | Cancel session                    |
 
 ---
 
 ## 18. Reviews
 
-| Method | Path | Auth | Role | Summary |
-|---|---|---:|---|---|
-| POST | `/api/cg/reviews` | Yes | Authenticated | Create review |
-| GET | `/api/cg/reviews` | Yes | Authenticated | Get reviews for current user |
-| GET | `/api/cg/reviews/teacher/:teacherId` | Yes | Authenticated | Get teacher reviews |
-| PATCH | `/api/cg/reviews/:reviewId` | Yes | Authenticated | Update review |
-| DELETE | `/api/cg/reviews/:reviewId` | Yes | Authenticated | Delete review |
+| Method | Path                                 | Auth | Role          | Summary                      |
+| ------ | ------------------------------------ | ---: | ------------- | ---------------------------- |
+| POST   | `/api/cg/reviews`                    |  Yes | Authenticated | Create review                |
+| GET    | `/api/cg/reviews`                    |  Yes | Authenticated | Get reviews for current user |
+| GET    | `/api/cg/reviews/teacher/:teacherId` |  Yes | Authenticated | Get teacher reviews          |
+| PATCH  | `/api/cg/reviews/:reviewId`          |  Yes | Authenticated | Update review                |
+| DELETE | `/api/cg/reviews/:reviewId`          |  Yes | Authenticated | Delete review                |
 
 ### Example: Create review
+
 Request:
+
 ```json
 {
   "teacherId": "6412f9...",
@@ -489,6 +530,7 @@ Request:
 ```
 
 Response:
+
 ```json
 {
   "message": "Review created successfully"
