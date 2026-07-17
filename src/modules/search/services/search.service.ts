@@ -3,7 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { Booking, BookingDocument } from '../../bookings/schema/booking.schema';
-import { PackageItem, PackageDocument } from '../../packages/schema/package.schema';
+import {
+  PackageItem,
+  PackageDocument,
+} from '../../packages/schema/package.schema';
 import { Review, ReviewDocument } from '../../reviews/schema/review.schema';
 import {
   StudentProfile,
@@ -95,17 +98,31 @@ export class SearchService {
       filter.rating = { $gte: dto.rating };
     }
 
-    const profiles = (await this.teacherProfileModel.find(filter).lean().exec()) as TeacherProfileLike[];
-    const allProfiles = (await this.teacherProfileModel.find().lean().exec()) as TeacherProfileLike[];
-    const corpusTerms = allProfiles.map((profile) => this.extractTerms([
-      profile.subjects,
-      profile.experience,
-      profile.availability,
-      profile.bio,
-    ]));
-    const avgDocLength = corpusTerms.reduce((sum, terms) => sum + terms.length, 0) / Math.max(corpusTerms.length, 1);
+    const profiles = (await this.teacherProfileModel
+      .find(filter)
+      .lean()
+      .exec()) as TeacherProfileLike[];
+    const allProfiles = (await this.teacherProfileModel
+      .find()
+      .lean()
+      .exec()) as TeacherProfileLike[];
+    const corpusTerms = allProfiles.map((profile) =>
+      this.extractTerms([
+        profile.subjects,
+        profile.experience,
+        profile.availability,
+        profile.bio,
+      ]),
+    );
+    const avgDocLength =
+      corpusTerms.reduce((sum, terms) => sum + terms.length, 0) /
+      Math.max(corpusTerms.length, 1);
     const documentFrequency = this.buildDocumentFrequency(corpusTerms);
-    const queryTerms = this.extractTerms([dto.subject, dto.experience, dto.availability]);
+    const queryTerms = this.extractTerms([
+      dto.subject,
+      dto.experience,
+      dto.availability,
+    ]);
 
     const scoredProfiles = profiles.map((profile) => {
       const docTerms = this.extractTerms([
@@ -131,18 +148,25 @@ export class SearchService {
       }
 
       if (dto.sort?.startsWith('rating')) {
-        return Number(right.profile.rating ?? 0) - Number(left.profile.rating ?? 0);
+        return (
+          Number(right.profile.rating ?? 0) - Number(left.profile.rating ?? 0)
+        );
       }
 
       return 0;
     });
 
     const total = scoredProfiles.length;
-    const pagedProfiles = scoredProfiles.slice(skip, skip + limit).map((item) => item.profile);
+    const pagedProfiles = scoredProfiles
+      .slice(skip, skip + limit)
+      .map((item) => item.profile);
 
     const items = await Promise.all(
       pagedProfiles.map(async (profile) => {
-        const user = await this.userModel.findById(profile.userId).lean().exec();
+        const user = await this.userModel
+          .findById(profile.userId)
+          .lean()
+          .exec();
         return { profile, user };
       }),
     );
@@ -212,19 +236,32 @@ export class SearchService {
   }
 
   async recommendTeachers(studentId: string) {
-    const currentStudent = await this.userModel.findById(studentId).lean().exec();
-    const studentProfile = (await this.studentProfileModel.findOne({ userId: studentId }).lean().exec()) as StudentProfileLike | null;
+    const currentStudent = await this.userModel
+      .findById(studentId)
+      .lean()
+      .exec();
+    const studentProfile = (await this.studentProfileModel
+      .findOne({ userId: studentId })
+      .lean()
+      .exec()) as StudentProfileLike | null;
 
     if (!currentStudent) {
       return { items: [], meta: { page: 1, limit: 10, total: 0, pages: 0 } };
     }
 
-    const [teacherProfiles, studentProfiles, bookings, reviews] = await Promise.all([
-      (await this.teacherProfileModel.find().lean().exec()) as TeacherProfileLike[],
-      (await this.studentProfileModel.find().lean().exec()) as StudentProfileLike[],
-      (await this.bookingModel.find().lean().exec()) as BookingLike[],
-      (await this.reviewModel.find().lean().exec()) as ReviewLike[],
-    ]);
+    const [teacherProfiles, studentProfiles, bookings, reviews] =
+      await Promise.all([
+        (await this.teacherProfileModel
+          .find()
+          .lean()
+          .exec()) as TeacherProfileLike[],
+        (await this.studentProfileModel
+          .find()
+          .lean()
+          .exec()) as StudentProfileLike[],
+        (await this.bookingModel.find().lean().exec()) as BookingLike[],
+        (await this.reviewModel.find().lean().exec()) as ReviewLike[],
+      ]);
 
     const teacherVectors = new Map<string, string[]>();
     for (const teacher of teacherProfiles) {
@@ -252,10 +289,16 @@ export class SearchService {
     }
 
     const studentVector = studentVectors.get(studentId) ?? [];
-    const studentHistoryBookings = bookings.filter((booking) => booking.studentId === studentId);
-    const historicalTeacherIds = new Set(studentHistoryBookings.map((booking) => booking.teacherId));
+    const studentHistoryBookings = bookings.filter(
+      (booking) => booking.studentId === studentId,
+    );
+    const historicalTeacherIds = new Set(
+      studentHistoryBookings.map((booking) => booking.teacherId),
+    );
     const historicalReviews = new Map(
-      reviews.filter((review) => review.studentId === studentId).map((review) => [review.teacherId, review.rating]),
+      reviews
+        .filter((review) => review.studentId === studentId)
+        .map((review) => [review.teacherId, review.rating]),
     );
 
     const scoredTeachers: Array<{ teacherId: string; score: number }> = [];
@@ -266,13 +309,37 @@ export class SearchService {
       }
 
       const candidateVector = teacherVectors.get(teacher.userId) ?? [];
-      const contentScore = this.cosineSimilarity(studentVector, candidateVector);
-      const userBasedCf = this.computeUserBasedCf(studentId, teacher.userId, studentVectors, bookings, reviews, teacherProfiles);
-      const itemBasedCf = this.computeItemBasedCf(studentId, teacher.userId, teacherVectors, bookings, reviews);
+      const contentScore = this.cosineSimilarity(
+        studentVector,
+        candidateVector,
+      );
+      const userBasedCf = this.computeUserBasedCf(
+        studentId,
+        teacher.userId,
+        studentVectors,
+        bookings,
+        reviews,
+        teacherProfiles,
+      );
+      const itemBasedCf = this.computeItemBasedCf(
+        studentId,
+        teacher.userId,
+        teacherVectors,
+        bookings,
+        reviews,
+      );
       const ratingBoost = Number(teacher.rating ?? 0) / 5;
-      const popularityBoost = Math.min(1, (Number(teacher.totalReviews ?? 0) / 10));
+      const popularityBoost = Math.min(
+        1,
+        Number(teacher.totalReviews ?? 0) / 10,
+      );
 
-      const finalScore = 0.4 * userBasedCf + 0.35 * itemBasedCf + 0.15 * contentScore + 0.05 * ratingBoost + 0.05 * popularityBoost;
+      const finalScore =
+        0.4 * userBasedCf +
+        0.35 * itemBasedCf +
+        0.15 * contentScore +
+        0.05 * ratingBoost +
+        0.05 * popularityBoost;
       scoredTeachers.push({ teacherId: teacher.userId, score: finalScore });
     }
 
@@ -281,7 +348,10 @@ export class SearchService {
 
     const items = await Promise.all(
       topTeachers.map(async ({ teacherId, score }) => {
-        const teacher = await this.teacherProfileModel.findOne({ userId: teacherId }).lean().exec();
+        const teacher = await this.teacherProfileModel
+          .findOne({ userId: teacherId })
+          .lean()
+          .exec();
         const user = await this.userModel.findById(teacherId).lean().exec();
         return { teacher, user, score };
       }),
@@ -311,7 +381,9 @@ export class SearchService {
     return documentFrequency;
   }
 
-  private extractTerms(values: Array<string | string[] | undefined | null>): string[] {
+  private extractTerms(
+    values: Array<string | string[] | undefined | null>,
+  ): string[] {
     const tokens = new Set<string>();
 
     for (const value of values) {
@@ -363,7 +435,8 @@ export class SearchService {
       }
 
       const numerator = tf * (k1 + 1);
-      const denominator = tf + k1 * (1 - b + b * (documentLength / Math.max(avgDocLength, 1)));
+      const denominator =
+        tf + k1 * (1 - b + b * (documentLength / Math.max(avgDocLength, 1)));
       score += idf * (numerator / denominator);
     }
 
@@ -390,15 +463,26 @@ export class SearchService {
         continue;
       }
 
-      const similarity = this.cosineSimilarity(currentVector, studentVectors.get(otherStudent) ?? []);
-      const peerBookings = bookings.filter((booking) => booking.studentId === otherStudent && booking.teacherId === targetTeacherId);
+      const similarity = this.cosineSimilarity(
+        currentVector,
+        studentVectors.get(otherStudent) ?? [],
+      );
+      const peerBookings = bookings.filter(
+        (booking) =>
+          booking.studentId === otherStudent &&
+          booking.teacherId === targetTeacherId,
+      );
 
       if (peerBookings.length === 0 || similarity === 0) {
         continue;
       }
 
       const avgPeerRating = this.averageRatingForStudent(otherStudent, reviews);
-      const peerRating = this.ratingForTeacher(otherStudent, targetTeacherId, reviews);
+      const peerRating = this.ratingForTeacher(
+        otherStudent,
+        targetTeacherId,
+        reviews,
+      );
       neighborScores.push({ similarity, rating: peerRating - avgPeerRating });
     }
 
@@ -406,9 +490,17 @@ export class SearchService {
       return 0;
     }
 
-    const numerator = neighborScores.reduce((sum, item) => sum + item.similarity * item.rating, 0);
-    const denominator = neighborScores.reduce((sum, item) => sum + Math.abs(item.similarity), 0);
-    return denominator === 0 ? 0 : Math.max(0, Math.min(1, numerator / denominator + 0.5));
+    const numerator = neighborScores.reduce(
+      (sum, item) => sum + item.similarity * item.rating,
+      0,
+    );
+    const denominator = neighborScores.reduce(
+      (sum, item) => sum + Math.abs(item.similarity),
+      0,
+    );
+    return denominator === 0
+      ? 0
+      : Math.max(0, Math.min(1, numerator / denominator + 0.5));
   }
 
   private computeItemBasedCf(
@@ -418,7 +510,9 @@ export class SearchService {
     bookings: BookingLike[],
     reviews: ReviewLike[],
   ) {
-    const studentHistory = bookings.filter((booking) => booking.studentId === currentStudentId);
+    const studentHistory = bookings.filter(
+      (booking) => booking.studentId === currentStudentId,
+    );
     const weightedScores: Array<{ similarity: number; rating: number }> = [];
 
     for (const booking of studentHistory) {
@@ -432,7 +526,11 @@ export class SearchService {
         continue;
       }
 
-      const rating = this.ratingForTeacher(currentStudentId, historicalTeacherId, reviews);
+      const rating = this.ratingForTeacher(
+        currentStudentId,
+        historicalTeacherId,
+        reviews,
+      );
       weightedScores.push({ similarity, rating });
     }
 
@@ -440,30 +538,51 @@ export class SearchService {
       return 0;
     }
 
-    const numerator = weightedScores.reduce((sum, item) => sum + item.similarity * item.rating, 0);
-    const denominator = weightedScores.reduce((sum, item) => sum + Math.abs(item.similarity), 0);
-    return denominator === 0 ? 0 : Math.max(0, Math.min(1, numerator / denominator / 5));
+    const numerator = weightedScores.reduce(
+      (sum, item) => sum + item.similarity * item.rating,
+      0,
+    );
+    const denominator = weightedScores.reduce(
+      (sum, item) => sum + Math.abs(item.similarity),
+      0,
+    );
+    return denominator === 0
+      ? 0
+      : Math.max(0, Math.min(1, numerator / denominator / 5));
   }
 
   private averageRatingForStudent(studentId: string, reviews: ReviewLike[]) {
-    const studentReviews = reviews.filter((review) => review.studentId === studentId);
+    const studentReviews = reviews.filter(
+      (review) => review.studentId === studentId,
+    );
     if (studentReviews.length === 0) {
       return 0;
     }
 
-    const total = studentReviews.reduce((sum, review) => sum + review.rating, 0);
+    const total = studentReviews.reduce(
+      (sum, review) => sum + review.rating,
+      0,
+    );
     return total / studentReviews.length;
   }
 
-  private ratingForTeacher(studentId: string, teacherId: string, reviews: ReviewLike[]) {
-    const review = reviews.find((item) => item.studentId === studentId && item.teacherId === teacherId);
+  private ratingForTeacher(
+    studentId: string,
+    teacherId: string,
+    reviews: ReviewLike[],
+  ) {
+    const review = reviews.find(
+      (item) => item.studentId === studentId && item.teacherId === teacherId,
+    );
     return review?.rating ?? 3;
   }
 
   private cosineSimilarity(left: string[], right: string[]) {
     const leftSet = new Set(left);
     const rightSet = new Set(right);
-    const intersection = [...leftSet].filter((item) => rightSet.has(item)).length;
+    const intersection = [...leftSet].filter((item) =>
+      rightSet.has(item),
+    ).length;
     const denominator = Math.sqrt(leftSet.size * rightSet.size);
 
     if (denominator === 0) {

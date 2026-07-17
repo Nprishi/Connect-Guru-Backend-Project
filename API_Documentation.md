@@ -1,25 +1,32 @@
 # API Documentation
 
-## Base URL
+## 1. Base URL
+
 - Global prefix: `/api/cg`
 - Super admin prefix: `/api/cg/superadmin/t1`
 - Health check: `GET /`
+- Protected endpoints require `Authorization: Bearer <token>`
+- Upload endpoints use `multipart/form-data` with the field `file`
 
-## Authentication
+---
 
-### Register user
-- `POST /api/cg/auth/register`
-- Auth: none
-- Body (RegisterDto):
-  - `firstName` (string)
-  - `lastName` (string)
-  - `email` (string)
-  - `password` (string)
-  - `role` (`student` | `teacher`)
-  - `phone` (string)
-  - `gender` (`male` | `female` | `other`)
+## 2. Authentication and Account
 
-Example:
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| POST | `/api/cg/auth/register` | No | Public | Register a new student or teacher |
+| POST | `/api/cg/auth/login` | No | Public | Login and get JWT |
+| POST | `/api/cg/auth/refresh-token` | No | Public | Refresh access token |
+| POST | `/api/cg/auth/logout` | Yes | Any authenticated user | Logout current session |
+| GET | `/api/cg/auth/profile` | Yes | Any authenticated user | Get authenticated user profile |
+| POST | `/api/cg/auth/forgot-password` | No | Public | Request password reset |
+| POST | `/api/cg/auth/reset-password` | No | Public | Reset password with token |
+| PATCH | `/api/cg/auth/change-password` | Yes | Any authenticated user | Change password |
+| POST | `/api/cg/auth/verify-email` | Yes | Any authenticated user | Verify email |
+| POST | `/api/cg/auth/resend-verification` | Yes | Any authenticated user | Resend verification email |
+
+### Example: Register
+Request:
 ```json
 {
   "firstName": "Jane",
@@ -32,14 +39,20 @@ Example:
 }
 ```
 
-### Login user
-- `POST /api/cg/auth/login`
-- Auth: none
-- Body (LoginDto):
-  - `email` (string)
-  - `password` (string)
+Response:
+```json
+{
+  "message": "User registered successfully",
+  "user": {
+    "id": "64...",
+    "email": "jane.doe@example.com",
+    "role": "student"
+  }
+}
+```
 
-Example:
+### Example: Login
+Request:
 ```json
 {
   "email": "jane.doe@example.com",
@@ -47,39 +60,29 @@ Example:
 }
 ```
 
-### Refresh token
-- `POST /api/cg/auth/refresh-token`
-- Auth: none
-- Body (RefreshTokenDto):
-  - `refreshToken` (JWT string)
-
-Example:
+Response:
 ```json
 {
-  "refreshToken": "<your-refresh-jwt-token>"
+  "accessToken": "<jwt-access-token>",
+  "refreshToken": "<jwt-refresh-token>",
+  "user": {
+    "id": "64...",
+    "email": "jane.doe@example.com",
+    "role": "student"
+  }
 }
 ```
 
-### Logout
-- `POST /api/cg/auth/logout`
-- Auth: yes (JWT)
-- Body: none
+---
 
-### Get profile
-- `GET /api/cg/auth/profile`
-- Auth: yes (JWT)
+## 3. Super Admin
 
-## Super Admin
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| POST | `/api/cg/superadmin/t1/login` | No | Public | Super admin login |
 
-### Super admin login
-- `POST /api/cg/superadmin/t1/login`
-- Auth: none
-- Body (SuperAdminLoginDto):
-  - `email` (string)
-  - `password` (string)
-  - `secretKey` (string)
-
-Example:
+### Example: Super admin login
+Request:
 ```json
 {
   "email": "example@gmail.com",
@@ -88,55 +91,86 @@ Example:
 }
 ```
 
-## Admin
-
-### Dashboard
-- `GET /api/cg/admin/dashboard`
-- Auth: yes (JWT)
-- Role: `ADMIN`
-
-### List users
-- `GET /api/cg/admin/users`
-- Auth: yes (JWT)
-- Role: `ADMIN`
-
-### Update user status
-- `PUT /api/cg/admin/users/:userId/status`
-- Auth: yes (JWT)
-- Role: `ADMIN`
-- Body:
-  - `status` (string)
-
-Example:
+Response:
 ```json
-{ "status": "active" }
+{
+  "accessToken": "<super-admin-token>"
+}
 ```
 
-## Users
+---
 
-### Upload avatar
-- `POST /api/cg/users/avatar`
-- Auth: yes (JWT)
-- Body: multipart/form-data with `file`
-- Response:
+## 4. Admin
+
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| GET | `/api/cg/admin/dashboard` | Yes | ADMIN | Admin dashboard overview |
+| GET | `/api/cg/admin/users` | Yes | ADMIN | List users |
+| PUT | `/api/cg/admin/users/:userId/status` | Yes | ADMIN | Update user status |
+
+### Example: Update user status
+Request:
 ```json
-{ "avatarUrl": "https://res.cloudinary.com/.../avatar.jpg" }
+{
+  "status": "active"
+}
 ```
 
-## Teachers
+Response:
+```json
+{
+  "message": "User status updated successfully"
+}
+```
 
-### Create or update teacher profile
-- `POST /api/cg/teachers/profile`
-- Auth: yes (JWT)
-- Body (CreateTeacherProfileDto):
-  - `subjects` (string[])
-  - `education` (string[])
-  - `experience` (string[])
-  - `availability` (string[])
-  - `hourlyRate` (number)
-  - `bio` (string)
+---
 
-Example:
+## 5. Users
+
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| GET | `/api/cg/users/profile` | Yes | Any authenticated user | Get current user profile |
+| PATCH | `/api/cg/users/profile` | Yes | Any authenticated user | Update current user profile |
+| DELETE | `/api/cg/users/account` | Yes | Any authenticated user | Delete account |
+| GET | `/api/cg/users/settings` | Yes | Any authenticated user | Get user settings |
+| PATCH | `/api/cg/users/settings` | Yes | Any authenticated user | Update user settings |
+| POST | `/api/cg/users/avatar` | Yes | Any authenticated user | Upload avatar |
+
+### Example: Upload avatar
+Request:
+```http
+POST /api/cg/users/avatar
+Content-Type: multipart/form-data
+Authorization: Bearer <token>
+```
+
+Form field:
+- `file`: image file
+
+Response:
+```json
+{
+  "avatarUrl": "https://res.cloudinary.com/.../avatar.jpg"
+}
+```
+
+---
+
+## 6. Teachers
+
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| POST | `/api/cg/teachers/profile` | Yes | Authenticated | Create or update teacher profile |
+| PATCH | `/api/cg/teachers/profile` | Yes | Authenticated | Patch teacher profile |
+| PATCH | `/api/cg/teachers/availability` | Yes | Authenticated | Update availability |
+| GET | `/api/cg/teachers/me` | Yes | Authenticated | Get current teacher profile |
+| GET | `/api/cg/teachers/dashboard` | Yes | Authenticated | Get teacher dashboard summary |
+| GET | `/api/cg/teachers/students` | Yes | Authenticated | List teacher's students |
+| GET | `/api/cg/teachers/reviews` | Yes | Authenticated | List teacher reviews |
+| GET | `/api/cg/teachers/profile/:userId` | No | Public | View teacher public profile |
+
+### Example: Create teacher profile
+Request:
 ```json
 {
   "subjects": ["Math", "Physics"],
@@ -148,92 +182,96 @@ Example:
 }
 ```
 
-### Patch teacher profile
-- `PATCH /api/cg/teachers/profile`
-- Auth: yes (JWT)
-- Body: partial teacher profile fields
-
-### Update teacher availability
-- `PATCH /api/cg/teachers/availability`
-- Auth: yes (JWT)
-- Body:
+Response:
 ```json
 {
-  "availability": ["Mon-Fri 6-9pm", "Sat 10am-1pm"]
+  "message": "Teacher profile created successfully",
+  "profile": {
+    "subjects": ["Math", "Physics"],
+    "hourlyRate": 20
+  }
 }
 ```
 
-### Get current teacher profile
-- `GET /api/cg/teachers/me`
-- Auth: yes (JWT)
+---
 
-### Get teacher dashboard summary
-- `GET /api/cg/teachers/dashboard`
-- Auth: yes (JWT)
+## 7. Students
 
-### Get teacher students
-- `GET /api/cg/teachers/students`
-- Auth: yes (JWT)
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| POST | `/api/cg/students/profile` | Yes | Authenticated | Create or update student profile |
+| PATCH | `/api/cg/students/profile` | Yes | Authenticated | Patch student profile |
+| GET | `/api/cg/students/me` | Yes | Authenticated | Get current student profile |
+| GET | `/api/cg/students/dashboard` | Yes | Authenticated | Get student dashboard summary |
+| GET | `/api/cg/students/profile/:userId` | No | Public | View student public profile |
 
-### Get teacher reviews
-- `GET /api/cg/teachers/reviews`
-- Auth: yes (JWT)
+### Example: Student profile payload
+Request:
+```json
+{
+  "preferredSubjects": ["Math"],
+  "learningGoals": ["Exam preparation"],
+  "interests": ["Problem solving"],
+  "bio": "Interested in mathematics and coding"
+}
+```
 
-### Get teacher profile
-- `GET /api/cg/teachers/profile/:userId`
-- Auth: no
+---
 
-### Search teachers
-- `GET /api/cg/teachers`
-- Auth: no
-- Query params:
-  - `subject` (optional)
-  - `page` (optional)
-  - `limit` (optional)
-  - `sort` (optional)
+## 8. Search
 
-## Students
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| GET | `/api/cg/search/teachers` | Yes | Authenticated | Search teachers with BM25-style ranking |
+| GET | `/api/cg/search/packages` | Yes | Authenticated | Search packages |
+| GET | `/api/cg/search/recommendations` | Yes | Authenticated | Get personalized teacher recommendations |
 
-### Create or update student profile
-- `POST /api/cg/students/profile`
-- Auth: yes (JWT)
-- Body (CreateStudentProfileDto):
-  - `preferredSubjects` (string[])
-  - `learningGoals` (string[])
-  - `interests` (string[])
-  - `bio` (string)
+### Example: Search teachers
+Request:
+```http
+GET /api/cg/search/teachers?subject=math&minPrice=10&maxPrice=30&rating=4&page=1&limit=10
+Authorization: Bearer <token>
+```
 
-### Patch student profile
-- `PATCH /api/cg/students/profile`
-- Auth: yes (JWT)
-- Body: partial student profile fields
+Response:
+```json
+{
+  "items": [
+    {
+      "profile": {
+        "userId": "64...",
+        "subjects": ["Math"],
+        "hourlyRate": 20,
+        "rating": 4.8
+      },
+      "user": {
+        "firstName": "Aarav",
+        "lastName": "Sharma"
+      }
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "pages": 1
+  }
+}
+```
 
-### Get current student profile
-- `GET /api/cg/students/me`
-- Auth: yes (JWT)
+---
 
-### Get student dashboard summary
-- `GET /api/cg/students/dashboard`
-- Auth: yes (JWT)
+## 9. Packages
 
-### Get student profile
-- `GET /api/cg/students/profile/:userId`
-- Auth: no
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| POST | `/api/cg/packages` | Yes | Authenticated | Create a package |
+| GET | `/api/cg/packages/me` | Yes | Authenticated | Get current teacher's packages |
+| GET | `/api/cg/packages/teacher/:teacherId` | No | Public | Get teacher's public packages |
+| GET | `/api/cg/packages/:packageId` | No | Public | Get package details |
 
-## Packages
-
-### Create package
-- `POST /api/cg/packages`
-- Auth: yes (JWT)
-- Body (CreatePackageDto):
-  - `name` (string)
-  - `description` (string)
-  - `price` (number)
-  - `durationInHours` (optional number)
-  - `sessions` (optional number)
-  - `isActive` (optional boolean)
-
-Example:
+### Example: Create package
+Request:
 ```json
 {
   "name": "Starter Pack",
@@ -245,30 +283,29 @@ Example:
 }
 ```
 
-### Get current teacher packages
-- `GET /api/cg/packages/me`
-- Auth: yes (JWT)
+Response:
+```json
+{
+  "message": "Package created successfully",
+  "package": {
+    "name": "Starter Pack",
+    "price": 120
+  }
+}
+```
 
-### Get packages for teacher
-- `GET /api/cg/packages/teacher/:teacherId`
-- Auth: no
+---
 
-### Get package details
-- `GET /api/cg/packages/:packageId`
-- Auth: no
+## 10. Bookings
 
-## Bookings
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| POST | `/api/cg/bookings` | Yes | Authenticated | Create booking |
+| GET | `/api/cg/bookings` | Yes | Authenticated | Get bookings for current user |
+| PUT | `/api/cg/bookings/:bookingId/status` | Yes | Authenticated | Update booking status |
 
-### Create booking
-- `POST /api/cg/bookings`
-- Auth: yes (JWT)
-- Body (CreateBookingDto):
-  - `teacherId` (string)
-  - `subject` (string)
-  - `hourlyRate` (optional number)
-  - `notes` (optional string)
-
-Example:
+### Example: Create booking
+Request:
 ```json
 {
   "teacherId": "6412f9...",
@@ -278,31 +315,30 @@ Example:
 }
 ```
 
-### Get bookings for current user
-- `GET /api/cg/bookings`
-- Auth: yes (JWT)
-
-### Update booking status
-- `PUT /api/cg/bookings/:bookingId/status`
-- Auth: yes (JWT)
-- Body (UpdateBookingStatusDto):
-  - `status` (enum)
-
-Example:
+Response:
 ```json
-{ "status": "accepted" }
+{
+  "message": "Booking created successfully",
+  "booking": {
+    "teacherId": "6412f9...",
+    "subject": "Mathematics",
+    "status": "pending"
+  }
+}
 ```
 
-## Chat
+---
 
-### Send message
-- `POST /api/cg/chat/messages`
-- Auth: yes (JWT)
-- Body (CreateMessageDto):
-  - `recipientId` (string)
-  - `content` (string)
+## 11. Chat
 
-Example:
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| POST | `/api/cg/chat/messages` | Yes | Authenticated | Send a message |
+| GET | `/api/cg/chat/conversations` | Yes | Authenticated | Get conversations |
+| GET | `/api/cg/chat/messages/:conversationId` | Yes | Authenticated | Get messages for a conversation |
+
+### Example: Send message
+Request:
 ```json
 {
   "recipientId": "6412f9...",
@@ -310,59 +346,69 @@ Example:
 }
 ```
 
-### Get conversations
-- `GET /api/cg/chat/conversations`
-- Auth: yes (JWT)
-
-### Get messages for a conversation
-- `GET /api/cg/chat/messages/:conversationId`
-- Auth: yes (JWT)
-
-## Payments
-
-### Create payment
-- `POST /api/cg/payments`
-- Auth: yes (JWT)
-- Body (CreatePaymentDto):
-  - `teacherId` (string)
-  - `packageId` (string)
-  - `amount` (number)
-  - `transactionId` (optional string)
-
-Example:
+Response:
 ```json
 {
+  "message": "Message sent successfully"
+}
+```
+
+---
+
+## 12. Payments
+
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| POST | `/api/cg/payments` | Yes | Authenticated | Create payment |
+| GET | `/api/cg/payments` | Yes | Authenticated | Get payments for current user |
+| PUT | `/api/cg/payments/:paymentId/status` | Yes | Authenticated | Update payment status |
+
+### Example: Create payment
+Request:
+```json
+{
+  "teacherId": "6412f9...",
   "packageId": "6412f9...",
   "amount": 120,
   "transactionId": "txn_12345"
 }
 ```
 
-### Get payments for current user
-- `GET /api/cg/payments`
-- Auth: yes (JWT)
-
-### Update payment status
-- `PUT /api/cg/payments/:paymentId/status`
-- Auth: yes (JWT)
-- Body:
-  - `status` (string)
-
-Example:
+Response:
 ```json
-{ "status": "completed" }
+{
+  "message": "Payment created successfully",
+  "payment": {
+    "amount": 120,
+    "status": "pending"
+  }
+}
 ```
 
-## KYC
+---
 
-### Submit KYC
-- `POST /api/cg/kyc`
-- Auth: yes (JWT)
-- Body (SubmitKycDto):
-  - `documentType` (string)
-  - `documentUrl` (string)
+## 13. Analytics
 
-Example:
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| GET | `/api/cg/analytics/student` | Yes | Authenticated | Student dashboard analytics |
+| GET | `/api/cg/analytics/teacher` | Yes | Authenticated | Teacher dashboard analytics |
+| GET | `/api/cg/analytics/admin` | Yes | ADMIN | Admin analytics summary |
+
+---
+
+## 14. KYC
+
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| POST | `/api/cg/kyc` | Yes | Authenticated | Submit KYC |
+| POST | `/api/cg/kyc/upload` | Yes | Authenticated | Upload KYC document |
+| GET | `/api/cg/kyc` | Yes | Authenticated | Get current user's KYC |
+| GET | `/api/cg/kyc/admin` | Yes | ADMIN | Get all KYC records |
+| PUT | `/api/cg/kyc/:kycId/review` | Yes | ADMIN | Review KYC |
+
+### Example: Submit KYC
+Request:
 ```json
 {
   "documentType": "passport",
@@ -370,61 +416,109 @@ Example:
 }
 ```
 
-### Upload KYC document
-- `POST /api/cg/kyc/upload`
-- Auth: yes (JWT)
-- Body: multipart/form-data with `file`
-- Response:
-```json
-{ "documentUrl": "https://res.cloudinary.com/.../kyc-doc.jpg" }
-```
-
-### Get current user's KYC
-- `GET /api/cg/kyc`
-- Auth: yes (JWT)
-
-### Get all KYC records (admin)
-- `GET /api/cg/kyc/admin`
-- Auth: yes (JWT)
-
-### Review KYC
-- `PUT /api/cg/kyc/:kycId/review`
-- Auth: yes (JWT)
-- Body (ReviewKycDto):
-  - `status` (string)
-  - `adminNote` (string)
-
-Example:
+Response:
 ```json
 {
-  "status": "approved",
-  "adminNote": "Verified"
+  "message": "KYC submitted successfully"
 }
 ```
 
-## UI Feature Mapping
+---
 
-These backend endpoints support the teacher dashboard and related UI screens:
+## 15. Categories and Subjects
 
-- Teacher dashboard / home data: `GET /api/cg/teachers/dashboard` plus `GET /api/cg/auth/profile` and the teacher's related bookings, payments, packages, and chat data.
-- Teacher self profile: `GET /api/cg/teachers/me`
-- Teacher profile patch: `PATCH /api/cg/teachers/profile`
-- Teacher availability patch: `PATCH /api/cg/teachers/availability`
-- My Students: `GET /api/cg/teachers/students` and `GET /api/cg/students/profile/:userId` for student details.
-- Teacher reviews: `GET /api/cg/teachers/reviews`
-- My Packages: `GET /api/cg/packages/me` and `GET /api/cg/packages/teacher/:teacherId`
-- Requests: `GET /api/cg/bookings`
-- Earnings: `GET /api/cg/payments`
-- Schedule: `GET /api/cg/bookings`
-- Messages: `GET /api/cg/chat/conversations` and `GET /api/cg/chat/messages/:conversationId`
-- Student dashboard / profile: `GET /api/cg/students/dashboard`, `GET /api/cg/students/me`, `PATCH /api/cg/students/profile`
-- Profile: `GET /api/cg/teachers/profile/:userId` and `POST /api/cg/teachers/profile`
-- Admin overview: `GET /api/cg/admin/dashboard`
-- Notifications: backend does not expose a dedicated notification endpoint in the current source.
+| Module | Method | Path | Auth | Role | Summary |
+|---|---|---|---:|---|---|
+| Categories | POST | `/api/cg/categories` | Yes | ADMIN | Create category |
+| Categories | GET | `/api/cg/categories` | Yes | Any authenticated user | List categories |
+| Categories | GET | `/api/cg/categories/:categoryId` | Yes | Any authenticated user | Get category by id |
+| Categories | PATCH | `/api/cg/categories/:categoryId` | Yes | ADMIN | Update category |
+| Categories | DELETE | `/api/cg/categories/:categoryId` | Yes | ADMIN | Delete category |
+| Subjects | POST | `/api/cg/subjects` | Yes | ADMIN | Create subject |
+| Subjects | GET | `/api/cg/subjects` | Yes | Any authenticated user | List subjects |
+| Subjects | GET | `/api/cg/subjects/:subjectId` | Yes | Any authenticated user | Get subject by id |
+| Subjects | PATCH | `/api/cg/subjects/:subjectId` | Yes | ADMIN | Update subject |
+| Subjects | DELETE | `/api/cg/subjects/:subjectId` | Yes | ADMIN | Delete subject |
 
-## Notes
-- All protected endpoints require `Authorization: Bearer <token>`.
-- File uploads must use `multipart/form-data` with the field name `file`.
-- The current backend maps UI dashboard and profile needs through the REST routes listed above rather than through a dedicated `/teacher/dashboard` or `/teacher/my-student` path.
-- DTO names reference files under `src/modules/*/dto` — consult the DTOs for exact schemas.
-- File uploads use `multipart/form-data` with `file` field and are handled via Cloudinary in the codebase.
+---
+
+## 16. Notifications
+
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| GET | `/api/cg/notifications` | Yes | Any authenticated user | Get notifications |
+| GET | `/api/cg/notifications/unread-count` | Yes | Any authenticated user | Get unread count |
+| PATCH | `/api/cg/notifications/:notificationId/read` | Yes | Any authenticated user | Mark one as read |
+| PATCH | `/api/cg/notifications/read-all` | Yes | Any authenticated user | Mark all as read |
+| DELETE | `/api/cg/notifications/:notificationId` | Yes | Any authenticated user | Delete notification |
+
+---
+
+## 17. Sessions
+
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| POST | `/api/cg/sessions` | Yes | Authenticated | Create session |
+| GET | `/api/cg/sessions` | Yes | Authenticated | Get all sessions for current user |
+| GET | `/api/cg/sessions/student` | Yes | Authenticated | Get student sessions |
+| GET | `/api/cg/sessions/teacher` | Yes | Authenticated | Get teacher sessions |
+| PATCH | `/api/cg/sessions/:sessionId/start` | Yes | Authenticated | Start session |
+| PATCH | `/api/cg/sessions/:sessionId/end` | Yes | Authenticated | End session |
+| PATCH | `/api/cg/sessions/:sessionId/cancel` | Yes | Authenticated | Cancel session |
+
+---
+
+## 18. Reviews
+
+| Method | Path | Auth | Role | Summary |
+|---|---|---:|---|---|
+| POST | `/api/cg/reviews` | Yes | Authenticated | Create review |
+| GET | `/api/cg/reviews` | Yes | Authenticated | Get reviews for current user |
+| GET | `/api/cg/reviews/teacher/:teacherId` | Yes | Authenticated | Get teacher reviews |
+| PATCH | `/api/cg/reviews/:reviewId` | Yes | Authenticated | Update review |
+| DELETE | `/api/cg/reviews/:reviewId` | Yes | Authenticated | Delete review |
+
+### Example: Create review
+Request:
+```json
+{
+  "teacherId": "6412f9...",
+  "rating": 5,
+  "comment": "Excellent teaching"
+}
+```
+
+Response:
+```json
+{
+  "message": "Review created successfully"
+}
+```
+
+---
+
+## 19. UI Mapping
+
+These backend endpoints support the main dashboard and profile flows:
+
+- Teacher dashboard: `GET /api/cg/teachers/dashboard` + `GET /api/cg/analytics/teacher`
+- Student dashboard: `GET /api/cg/students/dashboard` + `GET /api/cg/analytics/student`
+- Admin overview: `GET /api/cg/admin/dashboard` + `GET /api/cg/analytics/admin`
+- Teacher profile and availability: `POST/PATCH /api/cg/teachers/profile`, `PATCH /api/cg/teachers/availability`
+- Student profile: `POST/PATCH /api/cg/students/profile`
+- Requests / bookings: `GET /api/cg/bookings`
+- Payments: `GET /api/cg/payments`
+- Notifications: `GET /api/cg/notifications`
+- Messages: `GET /api/cg/chat/conversations`, `GET /api/cg/chat/messages/:conversationId`
+
+---
+
+## 20. Final Swagger-style Summary
+
+This backend exposes a RESTful NestJS API with role-based authorization, JWT authentication, file upload support, and modular feature controllers such as Auth, Users, Teachers, Students, Search, Packages, Booking, Payment, Review, Notification, Session, Analytics, KYC, Category, and Subject management.
+
+All protected endpoints should call the API using:
+
+```http
+Authorization: Bearer <token>
+```
