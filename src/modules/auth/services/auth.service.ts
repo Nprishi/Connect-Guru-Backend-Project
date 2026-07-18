@@ -9,8 +9,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { randomInt } from 'crypto';
+import { Model } from 'mongoose';
 
 import { UsersService } from '../../users/services/users.service';
 import { AUTH_CONSTANTS } from '../auth.constants';
@@ -26,6 +28,7 @@ import { UserRole } from '../enums/user-role.enum';
 import { UserStatus } from '../enums/user-status.enum';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { NotificationsService } from '../../notifications/services/notifications.service';
+import { AuditAction, AuditLog, AuditLogDocument } from '../../super-admin/schema/audit-log.schema';
 import { AuthEmailService } from './auth-email.service';
 
 @Injectable()
@@ -36,6 +39,8 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly authEmailService: AuthEmailService,
     private readonly notificationsService: NotificationsService,
+    @InjectModel(AuditLog.name)
+    private readonly auditLogModel: Model<AuditLogDocument>,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -135,7 +140,23 @@ export class AuthService {
     };
   }
 
-  async superAdminLogin(superAdminLoginDto: SuperAdminLoginDto) {
+  async superAdminLogin(
+    superAdminLoginDto: SuperAdminLoginDto,
+    metadata?: {
+      ipAddress?: string;
+      userAgent?: string;
+    },
+  ) {
+    const configuredSecretKey = this.configService.get<string>(
+      'SUPER_ADMIN_SECRET_KEY',
+    );
+
+    if (!configuredSecretKey) {
+      throw new UnauthorizedException(
+        'Super admin secret key is not configured.',
+      );
+    }
+
     const superAdmin = await this.usersService.findByEmail(
       superAdminLoginDto.email,
       true,
@@ -155,16 +176,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password.');
     }
 
-    if (!superAdmin.superAdminSecret) {
-      throw new UnauthorizedException('Super admin secret is not configured.');
-    }
-
-    const isSecretValid = await bcrypt.compare(
-      superAdminLoginDto.secretKey,
-      superAdmin.superAdminSecret,
-    );
-
-    if (!isSecretValid) {
+    if (superAdminLoginDto.secretKey !== configuredSecretKey) {
       throw new UnauthorizedException('Invalid secret key.');
     }
 
@@ -176,7 +188,21 @@ export class AuthService {
     );
     await this.usersService.updateLastLogin(superAdmin.id);
 
+    await this.auditLogModel.create({
+      adminId: superAdmin.id,
+      adminEmail: superAdmin.email,
+      action: AuditAction.SUPER_ADMIN_LOGIN,
+      details: {
+        user: 'Super Admin',
+        loginTime: new Date(),
+        status: 'SUCCESS',
+      },
+      ipAddress: metadata?.ipAddress ?? null,
+      userAgent: metadata?.userAgent ?? null,
+    });
+
     return {
+      success: true,
       message: 'Super admin login successful.',
       data: {
         user: this.sanitizeUser(superAdmin),

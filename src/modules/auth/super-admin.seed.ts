@@ -20,9 +20,9 @@ export class SuperAdminSeeder implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const email = this.configService.get<string>('Super_email');
-    const password = this.configService.get<string>('Super_password');
-    const secretKey = this.configService.get<string>('Super_secretKey');
+    const email = this.configService.get<string>('SUPER_ADMIN_EMAIL');
+    const password = this.configService.get<string>('SUPER_ADMIN_PASSWORD');
+    const secretKey = this.configService.get<string>('SUPER_ADMIN_SECRET_KEY');
 
     if (!email || !password || !secretKey) {
       this.logger.error('Super Admin environment variables are missing.');

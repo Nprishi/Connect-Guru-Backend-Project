@@ -10,6 +10,7 @@ export enum AuditAction {
   ADMIN_UPDATED = 'admin_updated',
   ADMIN_DELETED = 'admin_deleted',
   PLATFORM_SETTINGS_UPDATED = 'platform_settings_updated',
+  SUPER_ADMIN_LOGIN = 'super_admin_login',
 }
 
 @Schema({ timestamps: true })

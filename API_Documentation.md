@@ -86,7 +86,7 @@ Response:
 
 | Method | Path                                            | Auth | Role        | Summary                                    |
 | ------ | ----------------------------------------------- | ---: | ----------- | ------------------------------------------ |
-| POST   | `/api/cg/superadmin/t1/login`                   |   No | Public      | Super admin login                          |
+| POST   | `/api/cg/superadmin/login`                      |   No | Public      | Super admin login                          |
 | GET    | `/api/cg/superadmin/dashboard`                  |  Yes | SUPER_ADMIN | Get super admin dashboard summary          |
 | GET    | `/api/cg/superadmin/admins`                     |  Yes | SUPER_ADMIN | List paginated admin accounts              |
 | POST   | `/api/cg/superadmin/admins`                     |  Yes | SUPER_ADMIN | Create a new admin account                 |

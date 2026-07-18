@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 
 import { NotificationsModule } from '../notifications/notifications.module';
 import { UsersModule } from '../users/users.module';
+import { AuditLog, AuditLogSchema } from '../super-admin/schema/audit-log.schema';
 import { AuthController } from './controllers/auth.controller';
 import { AUTH_CONSTANTS } from './auth.constants';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -18,6 +20,9 @@ import { SuperAdminSeeder } from './super-admin.seed';
   imports: [
     UsersModule,
     NotificationsModule,
+    MongooseModule.forFeature([
+      { name: AuditLog.name, schema: AuditLogSchema },
+    ]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

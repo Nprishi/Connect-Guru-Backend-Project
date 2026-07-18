@@ -34,6 +34,7 @@ import { CreateAdminDto } from '../dto/create-admin.dto';
 import { SystemSettingsDto } from '../dto/system-settings.dto';
 import { UpdateAdminDto } from '../dto/update-admin.dto';
 import { SuperAdminService } from '../services/super-admin.service';
+import { SuperAdminLoginDto } from '../dto/super-admin-login.dto';
 
 @ApiTags('Super Admin')
 @ApiBearerAuth('JWT')
@@ -43,6 +44,13 @@ export class SuperAdminController {
     private readonly authService: AuthService,
     private readonly superAdminService: SuperAdminService,
   ) {}
+
+  @Post('login')
+  @ApiOperation({ summary: 'Super Admin Login' })
+  @ApiResponse({ status: 200, description: 'Login successful' })
+  login(@Body() dto: SuperAdminLoginDto) {
+    return this.authService.superAdminLogin(dto);
+  }
 
   @Get('dashboard')
   @UseGuards(JwtAuthGuard, RolesGuard)
