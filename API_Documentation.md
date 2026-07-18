@@ -3,7 +3,8 @@
 ## 1. Base URL
 
 - Global prefix: `/api/cg`
-- Super admin prefix: `/api/cg/superadmin/t1`
+- Super admin login prefix: `/api/cg/superadmin/t1`
+- Super admin platform prefix: `/api/cg/superadmin`
 - Health check: `GET /`
 - Protected endpoints require `Authorization: Bearer <token>`
 - Upload endpoints use `multipart/form-data` with the field `file`
@@ -83,9 +84,23 @@ Response:
 
 ## 3. Super Admin
 
-| Method | Path                          | Auth | Role   | Summary           |
-| ------ | ----------------------------- | ---: | ------ | ----------------- |
-| POST   | `/api/cg/superadmin/t1/login` |   No | Public | Super admin login |
+| Method | Path                                            | Auth | Role        | Summary                                    |
+| ------ | ----------------------------------------------- | ---: | ----------- | ------------------------------------------ |
+| POST   | `/api/cg/superadmin/t1/login`                   |   No | Public      | Super admin login                          |
+| GET    | `/api/cg/superadmin/dashboard`                  |  Yes | SUPER_ADMIN | Get super admin dashboard summary          |
+| GET    | `/api/cg/superadmin/admins`                     |  Yes | SUPER_ADMIN | List paginated admin accounts              |
+| POST   | `/api/cg/superadmin/admins`                     |  Yes | SUPER_ADMIN | Create a new admin account                 |
+| GET    | `/api/cg/superadmin/admins/:adminId`            |  Yes | SUPER_ADMIN | Get admin detail by id                     |
+| PATCH  | `/api/cg/superadmin/admins/:adminId`            |  Yes | SUPER_ADMIN | Update admin profile                       |
+| DELETE | `/api/cg/superadmin/admins/:adminId`            |  Yes | SUPER_ADMIN | Soft delete admin account                  |
+| GET    | `/api/cg/superadmin/analytics`                  |  Yes | SUPER_ADMIN | Get platform analytics                     |
+| GET    | `/api/cg/superadmin/system-settings`            |  Yes | SUPER_ADMIN | Get system settings                        |
+| PATCH  | `/api/cg/superadmin/system-settings`            |  Yes | SUPER_ADMIN | Update system settings                     |
+| GET    | `/api/cg/superadmin/audit-logs`                 |  Yes | SUPER_ADMIN | Get audit logs with pagination and filters |
+| POST   | `/api/cg/superadmin/database/backup`            |  Yes | SUPER_ADMIN | Create a MongoDB backup                    |
+| GET    | `/api/cg/superadmin/database/backups`           |  Yes | SUPER_ADMIN | List database backups                      |
+| POST   | `/api/cg/superadmin/database/restore/:backupId` |  Yes | SUPER_ADMIN | Restore a MongoDB backup                   |
+| POST   | `/api/cg/superadmin/announcements`              |  Yes | SUPER_ADMIN | Broadcast a platform announcement          |
 
 ### Example: Super admin login
 
@@ -103,7 +118,38 @@ Response:
 
 ```json
 {
-  "accessToken": "<super-admin-token>"
+  "success": true,
+  "message": "Super admin login successful.",
+  "data": {
+    "accessToken": "<super-admin-token>"
+  }
+}
+```
+
+### Example: Super admin dashboard
+
+Request:
+
+```http
+GET /api/cg/superadmin/dashboard
+Authorization: Bearer <super-admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Dashboard fetched successfully.",
+  "data": {
+    "overview": {
+      "totalAdmins": 10,
+      "totalTeachers": 120,
+      "totalStudents": 450,
+      "totalBookings": 75,
+      "totalRevenue": 12500
+    }
+  }
 }
 ```
 

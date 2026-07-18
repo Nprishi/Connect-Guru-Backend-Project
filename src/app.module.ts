@@ -9,6 +9,7 @@ import { mongooseConfig } from './config/mongoose.config';
 import { AdminModule } from './modules/admin/admin.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { SuperAdminModule } from './modules/super-admin/super-admin.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ChatModule } from './modules/chat/chat.module';
@@ -74,6 +75,8 @@ import { UsersModule } from './modules/users/users.module';
     KycModule,
 
     AdminModule,
+
+    SuperAdminModule,
   ],
   controllers: [AppController],
 })

@@ -6,9 +6,9 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
+import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
-import { AppModule } from './app.module';
 
 const logger = new Logger('Bootstrap');
 
@@ -20,7 +20,7 @@ async function bootstrap() {
       'http://localhost:3000',
       'http://localhost:3001',
       process.env.FRONTEND_URL,
-    ],
+    ].filter(Boolean),
     credentials: true,
   });
 
@@ -29,33 +29,64 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.setGlobalPrefix('api/cg');
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
+
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new TransformInterceptor());
 
-  const config = new DocumentBuilder()
-    .setTitle('Connect Guru API')
-    .setDescription('Production-ready NestJS backend for Connect Guru')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Connect Guru API')
+      .setDescription('Production Ready Connect Guru REST API')
+      .setVersion('1.0.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          in: 'header',
+        },
+        'JWT',
+      )
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
 
-  const port = process.env.PORT || 5000;
+    SwaggerModule.setup('docs', app, document, {
+      customSiteTitle: 'Connect Guru API Documentation',
+      jsonDocumentUrl: 'docs-json',
+      yamlDocumentUrl: 'docs-yaml',
+      swaggerOptions: {
+        persistAuthorization: true,
+        filter: true,
+        docExpansion: 'none',
+        tagsSorter: 'alpha',
+        operationsSorter: 'alpha',
+      },
+    });
+  }
+
+  const port = Number(process.env.PORT) || 5000;
 
   await app.listen(port);
 
-  logger.log('\n Step 4: Server started successfully');
-  logger.log(`Server running on http://localhost:${port}/api/cg`);
-  logger.log(`Swagger docs available at http://localhost:${port}/api/cg/docs`);
+  logger.log(`\n Step 4: Server running on http://localhost:${port}/api/cg`);
+
+  if (process.env.NODE_ENV !== 'production') {
+    logger.log(
+      `\n Step 5: Swagger documentation: http://localhost:${port}/docs`,
+    );
+  }
 }
 
 bootstrap();

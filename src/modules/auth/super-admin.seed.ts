@@ -1,21 +1,33 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 
 import { UsersService } from '../users/services/users.service';
-import { UserRole } from './enums/user-role.enum';
+
+import { Gender } from '../auth/enums/gender.enum';
+import { UserRole } from '../auth/enums/user-role.enum';
+import { UserStatus } from '../auth/enums/user-status.enum';
 
 @Injectable()
 export class SuperAdminSeeder implements OnModuleInit {
   private readonly logger = new Logger(SuperAdminSeeder.name);
 
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async onModuleInit() {
-    const email = String(process.env.Super_email);
-    const password = String(process.env.Super_password);
-    const secretKey = String(process.env.Super_secretKey);
+    const email = this.configService.get<string>('Super_email');
+    const password = this.configService.get<string>('Super_password');
+    const secretKey = this.configService.get<string>('Super_secretKey');
+
+    if (!email || !password || !secretKey) {
+      this.logger.error('Super Admin environment variables are missing.');
+      return;
+    }
 
     const existing = await this.usersService.findByEmail(email, true, true);
 
@@ -23,12 +35,7 @@ export class SuperAdminSeeder implements OnModuleInit {
     const hashedSecretKey = await bcrypt.hash(secretKey, 10);
 
     if (existing) {
-      await this.usersService.updatePassword(existing.id, hashedPassword);
-      await this.usersService.updateSuperAdminSecret(
-        existing.id,
-        hashedSecretKey,
-      );
-      this.logger.log('Super admin password and secret were updated.');
+      this.logger.log('Super Admin already exists.');
       return;
     }
 
@@ -37,13 +44,13 @@ export class SuperAdminSeeder implements OnModuleInit {
       lastName: 'Admin',
       email,
       password: hashedPassword,
-      role: UserRole.ADMIN,
-      gender: 'male' as any,
+      role: UserRole.SUPER_ADMIN,
+      gender: Gender.MALE,
       phone: '0000000000',
-      status: 'active' as any,
+      status: UserStatus.ACTIVE,
       superAdminSecret: hashedSecretKey,
     });
 
-    this.logger.log('Super admin account created.');
+    this.logger.log('Super Admin account created successfully.');
   }
 }

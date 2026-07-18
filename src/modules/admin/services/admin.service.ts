@@ -10,17 +10,19 @@ import { User, UserDocument } from '../../users/schema/user.schema';
 export class AdminService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    @InjectModel(Booking.name) private readonly bookingModel: Model<BookingDocument>,
+    @InjectModel(Booking.name)
+    private readonly bookingModel: Model<BookingDocument>,
     @InjectModel(Kyc.name) private readonly kycModel: Model<KycDocument>,
   ) {}
 
   async getDashboard() {
-    const [totalUsers, activeUsers, pendingBookings, pendingKyc] = await Promise.all([
-      this.userModel.countDocuments(),
-      this.userModel.countDocuments({ status: 'active' }),
-      this.bookingModel.countDocuments({ status: 'pending' }),
-      this.kycModel.countDocuments({ status: KycStatus.PENDING }),
-    ]);
+    const [totalUsers, activeUsers, pendingBookings, pendingKyc] =
+      await Promise.all([
+        this.userModel.countDocuments(),
+        this.userModel.countDocuments({ status: 'active' }),
+        this.bookingModel.countDocuments({ status: 'pending' }),
+        this.kycModel.countDocuments({ status: KycStatus.PENDING }),
+      ]);
 
     return {
       totalUsers,

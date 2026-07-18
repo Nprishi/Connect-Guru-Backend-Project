@@ -108,8 +108,22 @@ export class UsersService {
       .exec();
   }
 
+  async removeAvatar(userId: string) {
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      { avatar: null },
+      { new: true },
+    );
+  }
+
   async getProfile(userId: string) {
-    return this.userModel.findById(userId).select('-password -refreshToken -superAdminSecret -resetPasswordToken -emailVerificationOtpHash').lean().exec();
+    return this.userModel
+      .findById(userId)
+      .select(
+        '-password -refreshToken -superAdminSecret -resetPasswordToken -emailVerificationOtpHash',
+      )
+      .lean()
+      .exec();
   }
 
   async updateProfile(userId: string, updateData: Record<string, unknown>) {
@@ -123,22 +137,24 @@ export class UsersService {
         },
         { new: true },
       )
-      .select('-password -refreshToken -superAdminSecret -resetPasswordToken -emailVerificationOtpHash')
+      .select(
+        '-password -refreshToken -superAdminSecret -resetPasswordToken -emailVerificationOtpHash',
+      )
       .exec();
   }
 
   async getSettings(userId: string) {
-    const user = await this.userModel.findById(userId).select('settings').lean().exec();
+    const user = await this.userModel
+      .findById(userId)
+      .select('settings')
+      .lean()
+      .exec();
     return user?.settings ?? { notifications: true, emailUpdates: true };
   }
 
   async updateSettings(userId: string, settings: Record<string, unknown>) {
     return this.userModel
-      .findByIdAndUpdate(
-        userId,
-        { $set: { settings } },
-        { new: true },
-      )
+      .findByIdAndUpdate(userId, { $set: { settings } }, { new: true })
       .select('settings')
       .exec();
   }
@@ -154,26 +170,36 @@ export class UsersService {
     otpExpiresAt: Date | null,
     lastSentAt: Date | null,
   ) {
-    await this.userModel.findByIdAndUpdate(userId, {
-      emailVerificationOtpHash: otpHash,
-      emailVerificationOtpExpiresAt: otpExpiresAt,
-      emailVerificationLastSentAt: lastSentAt,
-    }).exec();
+    await this.userModel
+      .findByIdAndUpdate(userId, {
+        emailVerificationOtpHash: otpHash,
+        emailVerificationOtpExpiresAt: otpExpiresAt,
+        emailVerificationLastSentAt: lastSentAt,
+      })
+      .exec();
   }
 
   async markEmailVerified(userId: string) {
-    await this.userModel.findByIdAndUpdate(userId, {
-      isEmailVerified: true,
-      emailVerificationOtpHash: null,
-      emailVerificationOtpExpiresAt: null,
-      emailVerificationAttempts: 0,
-    }).exec();
+    await this.userModel
+      .findByIdAndUpdate(userId, {
+        isEmailVerified: true,
+        emailVerificationOtpHash: null,
+        emailVerificationOtpExpiresAt: null,
+        emailVerificationAttempts: 0,
+      })
+      .exec();
   }
 
-  async setResetPasswordToken(userId: string, tokenHash: string, expiresAt: Date) {
-    await this.userModel.findByIdAndUpdate(userId, {
-      resetPasswordToken: tokenHash,
-      resetPasswordExpiresAt: expiresAt,
-    }).exec();
+  async setResetPasswordToken(
+    userId: string,
+    tokenHash: string,
+    expiresAt: Date,
+  ) {
+    await this.userModel
+      .findByIdAndUpdate(userId, {
+        resetPasswordToken: tokenHash,
+        resetPasswordExpiresAt: expiresAt,
+      })
+      .exec();
   }
 }

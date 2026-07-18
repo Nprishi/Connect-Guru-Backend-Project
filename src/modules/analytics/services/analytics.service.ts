@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -21,16 +25,33 @@ export class AnalyticsService {
   ) {}
 
   async getStudentAnalytics(studentId: string) {
-    const [totalBookings, totalPayments, totalSessions, completedSessions] = await Promise.all([
-      this.bookingModel.countDocuments({ studentId }),
-      this.paymentModel.countDocuments({ studentId }),
-      this.sessionModel.countDocuments({ studentId }),
-      this.sessionModel.countDocuments({ studentId, status: 'completed' }),
-    ]);
+    const [totalBookings, totalPayments, totalSessions, completedSessions] =
+      await Promise.all([
+        this.bookingModel.countDocuments({ studentId }),
+        this.paymentModel.countDocuments({ studentId }),
+        this.sessionModel.countDocuments({ studentId }),
+        this.sessionModel.countDocuments({ studentId, status: 'completed' }),
+      ]);
 
-    const [recentBookings, recentSessions, monthlyBookings, monthlySessions, monthlyPayments] = await Promise.all([
-      this.bookingModel.find({ studentId }).sort({ createdAt: -1 }).limit(5).lean().exec(),
-      this.sessionModel.find({ studentId }).sort({ updatedAt: -1 }).limit(5).lean().exec(),
+    const [
+      recentBookings,
+      recentSessions,
+      monthlyBookings,
+      monthlySessions,
+      monthlyPayments,
+    ] = await Promise.all([
+      this.bookingModel
+        .find({ studentId })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean()
+        .exec(),
+      this.sessionModel
+        .find({ studentId })
+        .sort({ updatedAt: -1 })
+        .limit(5)
+        .lean()
+        .exec(),
       this.buildMonthlySeries(this.bookingModel, { studentId }, 'count'),
       this.buildMonthlySeries(this.sessionModel, { studentId }, 'count'),
       this.buildMonthlySeries(this.paymentModel, { studentId }, 'amount'),
@@ -42,7 +63,10 @@ export class AnalyticsService {
         totalPayments,
         totalSessions,
         completedSessions,
-        completionRate: totalSessions > 0 ? Number(((completedSessions / totalSessions) * 100).toFixed(2)) : 0,
+        completionRate:
+          totalSessions > 0
+            ? Number(((completedSessions / totalSessions) * 100).toFixed(2))
+            : 0,
       },
       charts: {
         bookings: monthlyBookings,
@@ -53,12 +77,22 @@ export class AnalyticsService {
         bookings: recentBookings,
         sessions: recentSessions,
       },
-      lastActivity: await this.sessionModel.findOne({ studentId }).sort({ updatedAt: -1 }).lean().exec(),
+      lastActivity: await this.sessionModel
+        .findOne({ studentId })
+        .sort({ updatedAt: -1 })
+        .lean()
+        .exec(),
     };
   }
 
   async getTeacherAnalytics(teacherId: string) {
-    const [totalBookings, totalSessions, totalRevenue, completedSessions, avgSessionDuration] = await Promise.all([
+    const [
+      totalBookings,
+      totalSessions,
+      totalRevenue,
+      completedSessions,
+      avgSessionDuration,
+    ] = await Promise.all([
       this.bookingModel.countDocuments({ teacherId }),
       this.sessionModel.countDocuments({ teacherId }),
       this.paymentModel.aggregate([
@@ -67,17 +101,48 @@ export class AnalyticsService {
       ]),
       this.sessionModel.countDocuments({ teacherId, status: 'completed' }),
       this.sessionModel.aggregate([
-        { $match: { teacherId, startedAt: { $ne: null }, endedAt: { $ne: null } } },
-        { $group: { _id: null, avgMinutes: { $avg: { $subtract: ['$endedAt', '$startedAt'] } } } },
+        {
+          $match: {
+            teacherId,
+            startedAt: { $ne: null },
+            endedAt: { $ne: null },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            avgMinutes: { $avg: { $subtract: ['$endedAt', '$startedAt'] } },
+          },
+        },
       ]),
     ]);
 
-    const [monthlyBookings, monthlySessions, monthlyRevenue, recentBookings, recentSessions] = await Promise.all([
+    const [
+      monthlyBookings,
+      monthlySessions,
+      monthlyRevenue,
+      recentBookings,
+      recentSessions,
+    ] = await Promise.all([
       this.buildMonthlySeries(this.bookingModel, { teacherId }, 'count'),
       this.buildMonthlySeries(this.sessionModel, { teacherId }, 'count'),
-      this.buildMonthlySeries(this.paymentModel, { teacherId, status: 'completed' }, 'amount'),
-      this.bookingModel.find({ teacherId }).sort({ createdAt: -1 }).limit(5).lean().exec(),
-      this.sessionModel.find({ teacherId }).sort({ updatedAt: -1 }).limit(5).lean().exec(),
+      this.buildMonthlySeries(
+        this.paymentModel,
+        { teacherId, status: 'completed' },
+        'amount',
+      ),
+      this.bookingModel
+        .find({ teacherId })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean()
+        .exec(),
+      this.sessionModel
+        .find({ teacherId })
+        .sort({ updatedAt: -1 })
+        .limit(5)
+        .lean()
+        .exec(),
     ]);
 
     return {
@@ -85,7 +150,10 @@ export class AnalyticsService {
         totalBookings,
         totalSessions,
         completedSessions,
-        completionRate: totalSessions > 0 ? Number(((completedSessions / totalSessions) * 100).toFixed(2)) : 0,
+        completionRate:
+          totalSessions > 0
+            ? Number(((completedSessions / totalSessions) * 100).toFixed(2))
+            : 0,
         avgSessionDuration: avgSessionDuration[0]?.avgMinutes ?? 0,
         totalRevenue: totalRevenue[0]?.totalRevenue ?? 0,
       },
@@ -102,8 +170,17 @@ export class AnalyticsService {
   }
 
   async getAdminAnalytics() {
-    const [usersByRole, totalBookings, totalPayments, totalSessions, completedSessions, totalRevenue] = await Promise.all([
-      this.userModel.aggregate([{ $group: { _id: '$role', count: { $sum: 1 } } }]),
+    const [
+      usersByRole,
+      totalBookings,
+      totalPayments,
+      totalSessions,
+      completedSessions,
+      totalRevenue,
+    ] = await Promise.all([
+      this.userModel.aggregate([
+        { $group: { _id: '$role', count: { $sum: 1 } } },
+      ]),
       this.bookingModel.countDocuments(),
       this.paymentModel.countDocuments(),
       this.sessionModel.countDocuments(),
@@ -114,12 +191,17 @@ export class AnalyticsService {
       ]),
     ]);
 
-    const [monthlyBookings, monthlySessions, monthlyRevenue, monthlyUsers] = await Promise.all([
-      this.buildMonthlySeries(this.bookingModel, {}, 'count'),
-      this.buildMonthlySeries(this.sessionModel, {}, 'count'),
-      this.buildMonthlySeries(this.paymentModel, { status: 'completed' }, 'amount'),
-      this.buildMonthlySeries(this.userModel, {}, 'count'),
-    ]);
+    const [monthlyBookings, monthlySessions, monthlyRevenue, monthlyUsers] =
+      await Promise.all([
+        this.buildMonthlySeries(this.bookingModel, {}, 'count'),
+        this.buildMonthlySeries(this.sessionModel, {}, 'count'),
+        this.buildMonthlySeries(
+          this.paymentModel,
+          { status: 'completed' },
+          'amount',
+        ),
+        this.buildMonthlySeries(this.userModel, {}, 'count'),
+      ]);
 
     return {
       summary: {
@@ -128,7 +210,10 @@ export class AnalyticsService {
         totalPayments,
         totalSessions,
         completedSessions,
-        completionRate: totalSessions > 0 ? Number(((completedSessions / totalSessions) * 100).toFixed(2)) : 0,
+        completionRate:
+          totalSessions > 0
+            ? Number(((completedSessions / totalSessions) * 100).toFixed(2))
+            : 0,
         totalRevenue: totalRevenue[0]?.totalRevenue ?? 0,
       },
       charts: {
@@ -140,13 +225,20 @@ export class AnalyticsService {
     };
   }
 
-  private async buildMonthlySeries(model: Model<any>, filter: Record<string, unknown>, valueType: 'count' | 'amount') {
+  private async buildMonthlySeries(
+    model: Model<any>,
+    filter: Record<string, unknown>,
+    valueType: 'count' | 'amount',
+  ) {
     const start = new Date();
     start.setMonth(start.getMonth() - 5);
     start.setDate(1);
     start.setHours(0, 0, 0, 0);
 
-    const docs = await model.find({ ...filter, createdAt: { $gte: start } }).lean().exec();
+    const docs = await model
+      .find({ ...filter, createdAt: { $gte: start } })
+      .lean()
+      .exec();
     const monthMap = new Map<string, number>();
 
     for (const doc of docs) {
@@ -168,3 +260,4 @@ export class AnalyticsService {
     return series;
   }
 }
+ 

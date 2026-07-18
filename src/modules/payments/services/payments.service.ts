@@ -1,16 +1,26 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { NotificationsService } from '../../notifications/services/notifications.service';
 import { UsersService } from '../../users/services/users.service';
 import { CreatePaymentDto } from '../dto/create-payment.dto';
-import { Payment, PaymentDocument, PaymentStatus } from '../schema/payment.schema';
+import {
+  Payment,
+  PaymentDocument,
+  PaymentStatus,
+} from '../schema/payment.schema';
 
 @Injectable()
 export class PaymentsService {
   constructor(
-    @InjectModel(Payment.name) private readonly paymentModel: Model<PaymentDocument>,
+    @InjectModel(Payment.name)
+    private readonly paymentModel: Model<PaymentDocument>,
     private readonly usersService: UsersService,
     private readonly notificationsService: NotificationsService,
   ) {}
@@ -31,7 +41,10 @@ export class PaymentsService {
       status: PaymentStatus.PENDING,
     });
 
-    await this.notificationsService.notifyPackagePurchased(studentId, dto.packageId);
+    await this.notificationsService.notifyPackagePurchased(
+      studentId,
+      dto.packageId,
+    );
     return payment;
   }
 
@@ -53,7 +66,11 @@ export class PaymentsService {
     const saved = await payment.save();
 
     if (status === PaymentStatus.COMPLETED) {
-      await this.notificationsService.notifyPaymentCompleted(payment.studentId, payment.id, payment.amount);
+      await this.notificationsService.notifyPaymentCompleted(
+        payment.studentId,
+        payment.id,
+        payment.amount,
+      );
     }
 
     return saved;

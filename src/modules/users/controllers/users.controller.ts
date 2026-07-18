@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Body,
   Controller,
@@ -53,6 +52,14 @@ export class UsersController {
     return this.usersService.updateProfile(userId, updateProfileDto);
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({ status: 200, description: 'Current profile returned' })
+  async getMe(@CurrentUser('sub') userId: string) {
+    return this.usersService.getProfile(userId);
+  }
+
   @Delete('account')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Delete current user account' })
@@ -98,5 +105,13 @@ export class UsersController {
     await this.usersService.updateAvatar(userId, uploaded.url);
 
     return { avatarUrl: uploaded.url };
+  }
+
+  @Delete('avatar')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Remove user avatar' })
+  @ApiResponse({ status: 200, description: 'Avatar removed' })
+  async deleteAvatar(@CurrentUser('sub') userId: string) {
+    return this.usersService.removeAvatar(userId);
   }
 }

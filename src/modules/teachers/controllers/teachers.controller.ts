@@ -31,7 +31,10 @@ export class TeachersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create or update teacher profile' })
-  @ApiResponse({ status: 200, description: 'Teacher profile created or updated' })
+  @ApiResponse({
+    status: 200,
+    description: 'Teacher profile created or updated',
+  })
   createOrUpdateProfile(
     @CurrentUser('sub') userId: string,
     @Body() createTeacherProfileDto: CreateTeacherProfileDto,
@@ -72,6 +75,15 @@ export class TeachersController {
   @ApiOperation({ summary: 'Get current teacher profile' })
   @ApiResponse({ status: 200, description: 'Current teacher returned' })
   getMe(@CurrentUser('sub') userId: string) {
+    return this.teachersService.getMe(userId);
+  }
+
+  @Get('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get current teacher profile' })
+  @ApiResponse({ status: 200, description: 'Current teacher returned' })
+  getMyProfile(@CurrentUser('sub') userId: string) {
     return this.teachersService.getMe(userId);
   }
 

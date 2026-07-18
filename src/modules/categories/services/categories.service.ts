@@ -20,7 +20,12 @@ export class CategoriesService {
   async getCategories(page = 1, limit = 10) {
     const skip = (page - 1) * limit;
     const [items, total] = await Promise.all([
-      this.categoryModel.find().sort({ createdAt: -1 }).skip(skip).limit(limit).exec(),
+      this.categoryModel
+        .find()
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
       this.categoryModel.countDocuments(),
     ]);
 
@@ -58,7 +63,9 @@ export class CategoriesService {
   }
 
   async deleteCategory(categoryId: string) {
-    const category = await this.categoryModel.findByIdAndDelete(categoryId).exec();
+    const category = await this.categoryModel
+      .findByIdAndDelete(categoryId)
+      .exec();
     if (!category) {
       throw new NotFoundException('Category not found.');
     }
