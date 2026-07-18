@@ -27,4 +27,4 @@ export class BackupRecord {
   createdBy!: string;
 }
 
-export const BackupSchema = SchemaFactory.createForClass(BackupRecord);
+export const BackupRecordSchema = SchemaFactory.createForClass(BackupRecord);

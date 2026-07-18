@@ -16,6 +16,7 @@ import {
   SystemSettings,
   SystemSettingsSchema,
 } from './schema/system-settings.schema';
+import { BackupRecord, BackupRecordSchema } from './schema/backup.schema';
 
 import { SuperAdminController } from './controllers/super-admin.controller';
 import { SuperAdminService } from './services/super-admin.service';
@@ -61,6 +62,10 @@ import { SuperAdminService } from './services/super-admin.service';
       {
         name: AuditLog.name,
         schema: AuditLogSchema,
+      },
+      {
+        name: BackupRecord.name,
+        schema: BackupRecordSchema,
       },
     ]),
   ],

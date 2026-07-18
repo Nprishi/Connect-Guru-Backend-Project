@@ -6,7 +6,6 @@ import { PassportModule } from '@nestjs/passport';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './controllers/auth.controller';
-import { SuperAdminController } from './controllers/super-admin.controller';
 import { AUTH_CONSTANTS } from './auth.constants';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
@@ -31,7 +30,9 @@ import { SuperAdminSeeder } from './super-admin.seed';
       }),
     }),
   ],
-  controllers: [AuthController, SuperAdminController],
+
+  controllers: [AuthController],
+
   providers: [
     AuthService,
     AuthEmailService,
@@ -40,5 +41,7 @@ import { SuperAdminSeeder } from './super-admin.seed';
     RolesGuard,
     SuperAdminSeeder,
   ],
+
+  exports: [AuthService],
 })
 export class AuthModule {}
