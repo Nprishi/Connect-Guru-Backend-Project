@@ -3,11 +3,13 @@
 ## 1. Base URL
 
 - Global prefix: `/api/cg`
-- Super admin login prefix: `/api/cg/superadmin/t1`
+- Public super admin login: `/api/cg/superadmin/login`
 - Super admin platform prefix: `/api/cg/superadmin`
+- Admin platform prefix: `/api/cg/admin`
 - Health check: `GET /`
 - Protected endpoints require `Authorization: Bearer <token>`
 - Upload endpoints use `multipart/form-data` with the field `file`
+- Admin and super admin responses follow the envelope shape: `{ success: true, message: '...', data: ... }`
 
 ---
 
@@ -157,11 +159,52 @@ Response:
 
 ## 4. Admin
 
-| Method | Path                                 | Auth | Role  | Summary                  |
-| ------ | ------------------------------------ | ---: | ----- | ------------------------ |
-| GET    | `/api/cg/admin/dashboard`            |  Yes | ADMIN | Admin dashboard overview |
-| GET    | `/api/cg/admin/users`                |  Yes | ADMIN | List users               |
-| PUT    | `/api/cg/admin/users/:userId/status` |  Yes | ADMIN | Update user status       |
+| Method | Path                                 | Auth | Role  | Summary                                    |
+| ------ | ------------------------------------ | ---: | ----- | ------------------------------------------ |
+| GET    | `/api/cg/admin/dashboard`            |  Yes | ADMIN | Admin dashboard overview                   |
+| GET    | `/api/cg/admin/users`                |  Yes | ADMIN | List users with pagination and role filter |
+| GET    | `/api/cg/admin/teachers`             |  Yes | ADMIN | List teachers with pagination              |
+| GET    | `/api/cg/admin/students`             |  Yes | ADMIN | List students with pagination              |
+| GET    | `/api/cg/admin/bookings`             |  Yes | ADMIN | List bookings with pagination and status   |
+| GET    | `/api/cg/admin/sessions`             |  Yes | ADMIN | List sessions with pagination and status   |
+| GET    | `/api/cg/admin/payments`             |  Yes | ADMIN | List payments with pagination and status   |
+| GET    | `/api/cg/admin/kyc`                  |  Yes | ADMIN | List KYC submissions with pagination       |
+| GET    | `/api/cg/admin/categories`           |  Yes | ADMIN | List categories with pagination            |
+| GET    | `/api/cg/admin/subjects`             |  Yes | ADMIN | List subjects with pagination              |
+| GET    | `/api/cg/admin/packages`             |  Yes | ADMIN | List packages with pagination              |
+| GET    | `/api/cg/admin/reviews`              |  Yes | ADMIN | List reviews with pagination               |
+| GET    | `/api/cg/admin/notifications`        |  Yes | ADMIN | List notifications with pagination         |
+| GET    | `/api/cg/admin/analytics`            |  Yes | ADMIN | Admin analytics summary and monthly charts |
+| GET    | `/api/cg/admin/reports`              |  Yes | ADMIN | Admin reporting totals                     |
+| PUT    | `/api/cg/admin/users/:userId/status` |  Yes | ADMIN | Update user status                         |
+
+### Example: Admin dashboard
+
+Request:
+
+```http
+GET /api/cg/admin/dashboard
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Admin dashboard summary fetched successfully.",
+  "data": {
+    "totalUsers": 120,
+    "activeUsers": 98,
+    "totalTeachers": 26,
+    "totalStudents": 94,
+    "pendingBookings": 7,
+    "pendingKyc": 3,
+    "pendingPayments": 2,
+    "pendingReviews": 3
+  }
+}
+```
 
 ### Example: Update user status
 
@@ -177,7 +220,12 @@ Response:
 
 ```json
 {
-  "message": "User status updated successfully"
+  "success": true,
+  "message": "User status updated successfully.",
+  "data": {
+    "_id": "64...",
+    "status": "active"
+  }
 }
 ```
 

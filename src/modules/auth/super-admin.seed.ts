@@ -31,13 +31,13 @@ export class SuperAdminSeeder implements OnModuleInit {
 
     const existing = await this.usersService.findByEmail(email, true, true);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const hashedSecretKey = await bcrypt.hash(secretKey, 10);
-
     if (existing) {
       this.logger.log('Super Admin already exists.');
       return;
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedSecretKey = await bcrypt.hash(secretKey, 10);
 
     await this.usersService.create({
       firstName: 'Super',
@@ -46,7 +46,7 @@ export class SuperAdminSeeder implements OnModuleInit {
       password: hashedPassword,
       role: UserRole.SUPER_ADMIN,
       gender: Gender.MALE,
-      phone: '0000000000',
+      phone: '+9779800000000',
       status: UserStatus.ACTIVE,
       superAdminSecret: hashedSecretKey,
     });

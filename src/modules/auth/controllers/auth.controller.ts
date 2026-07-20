@@ -26,6 +26,19 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
+  @ApiBody({
+    schema: {
+      example: {
+        firstName: 'Aarav',
+        lastName: 'Sharma',
+        email: 'aarav@example.com',
+        password: 'Abcdef1!',
+        role: 'student',
+        phone: '+9779876543210',
+        gender: 'male',
+      },
+    },
+  })
   @ApiResponse({ status: 201, description: 'User registered' })
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
@@ -33,14 +46,40 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Login a user' })
+  @ApiBody({
+    schema: {
+      example: {
+        email: 'aarav@example.com',
+        password: 'Abcdef1!',
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: 'User logged in' })
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
   @Post('refresh-token')
+  @ApiBearerAuth('RefreshToken')
   @ApiOperation({ summary: 'Refresh access token' })
-  @ApiResponse({ status: 200, description: 'Tokens refreshed' })
+  @ApiBody({
+    schema: {
+      example: {
+        refreshToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signature',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Tokens refreshed',
+    schema: {
+      example: {
+        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access-token',
+        refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh-token',
+      },
+    },
+  })
   refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshToken(refreshTokenDto);
   }
@@ -65,6 +104,13 @@ export class AuthController {
 
   @Post('forgot-password')
   @ApiOperation({ summary: 'Request password reset' })
+  @ApiBody({
+    schema: {
+      example: {
+        email: 'aarav@example.com',
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: 'Reset request processed' })
   forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.authService.forgotPassword(dto);
@@ -72,6 +118,14 @@ export class AuthController {
 
   @Post('reset-password')
   @ApiOperation({ summary: 'Reset password using token' })
+  @ApiBody({
+    schema: {
+      example: {
+        token: 'reset-token-from-email',
+        password: 'NewPassword1!',
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: 'Password reset' })
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
@@ -79,8 +133,16 @@ export class AuthController {
 
   @Patch('change-password')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'Change current user password' })
+  @ApiBody({
+    schema: {
+      example: {
+        currentPassword: 'Abcdef1!',
+        newPassword: 'NewPassword1!',
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: 'Password changed' })
   changePassword(
     @CurrentUser('sub') userId: string,
@@ -91,8 +153,15 @@ export class AuthController {
 
   @Post('verify-email')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBearerAuth('JWT')
   @ApiOperation({ summary: 'Verify email using OTP' })
+  @ApiBody({
+    schema: {
+      example: {
+        otp: '123456',
+      },
+    },
+  })
   @ApiResponse({ status: 200, description: 'Email verified' })
   verifyEmail(@CurrentUser('sub') userId: string, @Body() dto: VerifyEmailDto) {
     return this.authService.verifyEmail(userId, dto);

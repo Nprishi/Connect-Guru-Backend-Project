@@ -58,6 +58,15 @@ async function bootstrap() {
         },
         'JWT',
       )
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          in: 'header',
+        },
+        'RefreshToken',
+      )
       .build();
 
     const document = SwaggerModule.createDocument(app, config);

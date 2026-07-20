@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
@@ -28,7 +29,11 @@ import { UserRole } from '../enums/user-role.enum';
 import { UserStatus } from '../enums/user-status.enum';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { NotificationsService } from '../../notifications/services/notifications.service';
-import { AuditAction, AuditLog, AuditLogDocument } from '../../super-admin/schema/audit-log.schema';
+import {
+  AuditAction,
+  AuditLog,
+  AuditLogDocument,
+} from '../../super-admin/schema/audit-log.schema';
 import { AuthEmailService } from './auth-email.service';
 
 @Injectable()
