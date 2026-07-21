@@ -1,11 +1,8 @@
-import { IsIn, IsMongoId, IsOptional, IsString, Length } from 'class-validator';
+import { IsIn, IsOptional, IsString, Length } from 'class-validator';
 
 export class UpdateUserStatusDto {
-  @IsMongoId()
-  userId!: string;
-
   @IsString()
-  @IsIn(['active', 'inactive', 'suspended', 'blocked'])
+  @IsIn(['active', 'inactive', 'suspended', 'banned'])
   status!: string;
 
   @IsOptional()

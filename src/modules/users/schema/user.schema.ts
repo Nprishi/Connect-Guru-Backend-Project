@@ -70,6 +70,19 @@ export class User {
   status!: UserStatus;
 
   @Prop({
+    type: Boolean,
+    default: false,
+    index: true,
+  })
+  isDeleted!: boolean;
+
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  deletedAt!: Date | null;
+
+  @Prop({
     type: String,
     default: null,
   })

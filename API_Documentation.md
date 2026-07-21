@@ -159,26 +159,51 @@ Response:
 
 ## 4. Admin
 
-| Method | Path                                 | Auth | Role  | Summary                                    |
-| ------ | ------------------------------------ | ---: | ----- | ------------------------------------------ |
-| GET    | `/api/cg/admin/dashboard`            |  Yes | ADMIN | Admin dashboard overview                   |
-| GET    | `/api/cg/admin/users`                |  Yes | ADMIN | List users with pagination and role filter |
-| GET    | `/api/cg/admin/teachers`             |  Yes | ADMIN | List teachers with pagination              |
-| GET    | `/api/cg/admin/students`             |  Yes | ADMIN | List students with pagination              |
-| GET    | `/api/cg/admin/bookings`             |  Yes | ADMIN | List bookings with pagination and status   |
-| GET    | `/api/cg/admin/sessions`             |  Yes | ADMIN | List sessions with pagination and status   |
-| GET    | `/api/cg/admin/payments`             |  Yes | ADMIN | List payments with pagination and status   |
-| GET    | `/api/cg/admin/kyc`                  |  Yes | ADMIN | List KYC submissions with pagination       |
-| GET    | `/api/cg/admin/categories`           |  Yes | ADMIN | List categories with pagination            |
-| GET    | `/api/cg/admin/subjects`             |  Yes | ADMIN | List subjects with pagination              |
-| GET    | `/api/cg/admin/packages`             |  Yes | ADMIN | List packages with pagination              |
-| GET    | `/api/cg/admin/reviews`              |  Yes | ADMIN | List reviews with pagination               |
-| GET    | `/api/cg/admin/notifications`        |  Yes | ADMIN | List notifications with pagination         |
-| GET    | `/api/cg/admin/analytics`            |  Yes | ADMIN | Admin analytics summary and monthly charts |
-| GET    | `/api/cg/admin/reports`              |  Yes | ADMIN | Admin reporting totals                     |
-| PUT    | `/api/cg/admin/users/:userId/status` |  Yes | ADMIN | Update user status                         |
+| Method | Path                                         | Auth | Role  | Summary                                            |
+| ------ | -------------------------------------------- | ---: | ----- | -------------------------------------------------- |
+| GET    | `/api/cg/admin/dashboard`                    |  Yes | ADMIN | Admin dashboard overview                           |
+| GET    | `/api/cg/admin/users`                        |  Yes | ADMIN | List users with pagination, search, and filters    |
+| GET    | `/api/cg/admin/users/:userId`                |  Yes | ADMIN | Get a user profile                                 |
+| DELETE | `/api/cg/admin/users/:userId`                |  Yes | ADMIN | Soft delete a user                                 |
+| PATCH  | `/api/cg/admin/users/:userId/status`         |  Yes | ADMIN | Update a user status                               |
+| GET    | `/api/cg/admin/teachers`                     |  Yes | ADMIN | List teachers with pagination and verification     |
+| GET    | `/api/cg/admin/teachers/:teacherId`          |  Yes | ADMIN | Get a teacher profile                              |
+| PATCH  | `/api/cg/admin/teachers/:teacherId/status`   |  Yes | ADMIN | Update a teacher account status                    |
+| PATCH  | `/api/cg/admin/teachers/:teacherId/verify`   |  Yes | ADMIN | Approve teacher verification                       |
+| PATCH  | `/api/cg/admin/teachers/:teacherId/unverify` |  Yes | ADMIN | Remove teacher verification                        |
+| GET    | `/api/cg/admin/students`                     |  Yes | ADMIN | List students with pagination and search           |
+| GET    | `/api/cg/admin/students/:studentId`          |  Yes | ADMIN | Get a student profile                              |
+| PATCH  | `/api/cg/admin/students/:studentId/status`   |  Yes | ADMIN | Update a student account status                    |
+| GET    | `/api/cg/admin/bookings`                     |  Yes | ADMIN | List bookings with pagination, search, and filter  |
+| GET    | `/api/cg/admin/bookings/:bookingId`          |  Yes | ADMIN | Get booking details                                |
+| PATCH  | `/api/cg/admin/bookings/:bookingId/status`   |  Yes | ADMIN | Update booking status                              |
+| GET    | `/api/cg/admin/sessions`                     |  Yes | ADMIN | List sessions with pagination, status, and filters |
+| GET    | `/api/cg/admin/sessions/:sessionId`          |  Yes | ADMIN | Get session details                                |
+| PATCH  | `/api/cg/admin/sessions/:sessionId/cancel`   |  Yes | ADMIN | Cancel a session                                   |
+| GET    | `/api/cg/admin/payments`                     |  Yes | ADMIN | List payments with pagination and status           |
+| GET    | `/api/cg/admin/payments/:paymentId`          |  Yes | ADMIN | Get payment details                                |
+| PATCH  | `/api/cg/admin/payments/:paymentId/refund`   |  Yes | ADMIN | Refund a payment                                   |
+| GET    | `/api/cg/admin/kyc`                          |  Yes | ADMIN | List KYC submissions                               |
+| GET    | `/api/cg/admin/categories`                   |  Yes | ADMIN | List categories                                    |
+| GET    | `/api/cg/admin/subjects`                     |  Yes | ADMIN | List subjects                                      |
+| GET    | `/api/cg/admin/packages`                     |  Yes | ADMIN | List packages                                      |
+| GET    | `/api/cg/admin/packages/:packageId`          |  Yes | ADMIN | Get package details                                |
+| PATCH  | `/api/cg/admin/packages/:packageId/status`   |  Yes | ADMIN | Update package active status                       |
+| GET    | `/api/cg/admin/reviews`                      |  Yes | ADMIN | List reviews with pagination and search            |
+| DELETE | `/api/cg/admin/reviews/:reviewId`            |  Yes | ADMIN | Delete abusive review                              |
+| POST   | `/api/cg/admin/notifications`                |  Yes | ADMIN | Broadcast an admin notification                    |
+| GET    | `/api/cg/admin/notifications`                |  Yes | ADMIN | List notifications                                 |
+| GET    | `/api/cg/admin/analytics`                    |  Yes | ADMIN | Admin analytics overview                           |
+| GET    | `/api/cg/admin/reports/revenue`              |  Yes | ADMIN | Revenue report export or data                      |
+| GET    | `/api/cg/admin/reports/users`                |  Yes | ADMIN | Users report export or data                        |
+| GET    | `/api/cg/admin/reports/bookings`             |  Yes | ADMIN | Bookings report export or data                     |
+| GET    | `/api/cg/admin/reports/payments`             |  Yes | ADMIN | Payments report export or data                     |
+| GET    | `/api/cg/admin/reports/teachers`             |  Yes | ADMIN | Teachers report export or data                     |
+| GET    | `/api/cg/admin/reports/students`             |  Yes | ADMIN | Students report export or data                     |
 
-### Example: Admin dashboard
+### Admin endpoint examples
+
+#### GET /api/cg/admin/dashboard
 
 Request:
 
@@ -194,26 +219,125 @@ Response:
   "success": true,
   "message": "Admin dashboard summary fetched successfully.",
   "data": {
-    "totalUsers": 120,
-    "activeUsers": 98,
-    "totalTeachers": 26,
-    "totalStudents": 94,
-    "pendingBookings": 7,
-    "pendingKyc": 3,
-    "pendingPayments": 2,
-    "pendingReviews": 3
+    "users": {
+      "totalUsers": 120,
+      "activeUsers": 98,
+      "inactiveUsers": 12,
+      "suspendedUsers": 5,
+      "bannedUsers": 2
+    },
+    "teachers": {
+      "totalTeachers": 30,
+      "verifiedTeachers": 22,
+      "pendingTeachers": 8
+    },
+    "students": {
+      "totalStudents": 90,
+      "activeStudents": 82
+    }
   }
 }
 ```
 
-### Example: Update user status
+#### GET /api/cg/admin/users
+
+Request:
+
+```http
+GET /api/cg/admin/users?page=1&limit=10&role=student&status=active&search=ram&sort=createdAt:desc
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Users fetched successfully.",
+  "data": [
+    {
+      "_id": "64abc123def4567890abcd12",
+      "firstName": "Ram",
+      "lastName": "Sharma",
+      "email": "ram.sharma@example.com",
+      "role": "student",
+      "status": "active",
+      "phone": "+9779812345678"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 50,
+    "pages": 5
+  }
+}
+```
+
+#### GET /api/cg/admin/users/:userId
+
+Request:
+
+```http
+GET /api/cg/admin/users/64abc123def4567890abcd12
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "User fetched successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd12",
+    "firstName": "Ram",
+    "lastName": "Sharma",
+    "email": "ram.sharma@example.com",
+    "role": "student",
+    "status": "active",
+    "phone": "+9779812345678"
+  }
+}
+```
+
+#### DELETE /api/cg/admin/users/:userId
+
+Request:
+
+```http
+DELETE /api/cg/admin/users/64abc123def4567890abcd12
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "User soft deleted successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd12",
+    "isDeleted": true,
+    "deletedAt": "2026-07-22T10:00:00.000Z"
+  }
+}
+```
+
+#### PATCH /api/cg/admin/users/:userId/status
 
 Request:
 
 ```json
 {
-  "status": "active"
+  "status": "suspended"
 }
+```
+
+Headers:
+
+```http
+Authorization: Bearer <admin-token>
 ```
 
 Response:
@@ -223,10 +347,913 @@ Response:
   "success": true,
   "message": "User status updated successfully.",
   "data": {
-    "_id": "64...",
+    "_id": "64abc123def4567890abcd12",
+    "status": "suspended"
+  }
+}
+```
+
+#### GET /api/cg/admin/teachers
+
+Request:
+
+```http
+GET /api/cg/admin/teachers?page=1&limit=10&verificationStatus=verified&search=neha
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Teachers fetched successfully.",
+  "data": [
+    {
+      "user": {
+        "_id": "64abc123def4567890abcd34",
+        "firstName": "Neha",
+        "lastName": "Bhatt",
+        "email": "neha.bhatt@example.com",
+        "role": "teacher",
+        "status": "active"
+      },
+      "profile": {
+        "userId": "64abc123def4567890abcd34",
+        "isVerified": true,
+        "subjects": ["Math", "Physics"]
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 30,
+    "pages": 3
+  }
+}
+```
+
+#### GET /api/cg/admin/teachers/:teacherId
+
+Request:
+
+```http
+GET /api/cg/admin/teachers/64abc123def4567890abcd34
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Teacher fetched successfully.",
+  "data": {
+    "user": {
+      "_id": "64abc123def4567890abcd34",
+      "firstName": "Neha",
+      "lastName": "Bhatt",
+      "email": "neha.bhatt@example.com"
+    },
+    "profile": {
+      "userId": "64abc123def4567890abcd34",
+      "isVerified": true,
+      "subjects": ["Math", "Physics"]
+    }
+  }
+}
+```
+
+#### PATCH /api/cg/admin/teachers/:teacherId/status
+
+Request:
+
+```json
+{
+  "status": "active"
+}
+```
+
+Headers:
+
+```http
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Teacher status updated successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd34",
     "status": "active"
   }
 }
+```
+
+#### PATCH /api/cg/admin/teachers/:teacherId/verify
+
+Request:
+
+```http
+PATCH /api/cg/admin/teachers/64abc123def4567890abcd34/verify
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Teacher verified successfully.",
+  "data": {
+    "userId": "64abc123def4567890abcd34",
+    "isVerified": true
+  }
+}
+```
+
+#### PATCH /api/cg/admin/teachers/:teacherId/unverify
+
+Request:
+
+```http
+PATCH /api/cg/admin/teachers/64abc123def4567890abcd34/unverify
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Teacher unverified successfully.",
+  "data": {
+    "userId": "64abc123def4567890abcd34",
+    "isVerified": false
+  }
+}
+```
+
+#### GET /api/cg/admin/students
+
+Request:
+
+```http
+GET /api/cg/admin/students?page=1&limit=10&status=active&search=arya
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Students fetched successfully.",
+  "data": [
+    {
+      "_id": "64abc123def4567890abcd56",
+      "firstName": "Arya",
+      "lastName": "Khan",
+      "email": "arya.khan@example.com",
+      "status": "active"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 40,
+    "pages": 4
+  }
+}
+```
+
+#### GET /api/cg/admin/students/:studentId
+
+Request:
+
+```http
+GET /api/cg/admin/students/64abc123def4567890abcd56
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Student fetched successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd56",
+    "firstName": "Arya",
+    "lastName": "Khan",
+    "email": "arya.khan@example.com",
+    "status": "active"
+  }
+}
+```
+
+#### PATCH /api/cg/admin/students/:studentId/status
+
+Request:
+
+```json
+{
+  "status": "inactive"
+}
+```
+
+Headers:
+
+```http
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Student status updated successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd56",
+    "status": "inactive"
+  }
+}
+```
+
+#### GET /api/cg/admin/bookings
+
+Request:
+
+```http
+GET /api/cg/admin/bookings?page=1&limit=10&status=accepted&teacherId=64abc123def4567890abcd78&search=math
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Bookings fetched successfully.",
+  "data": [
+    {
+      "_id": "64abc123def4567890abcd90",
+      "teacherId": "64abc123def4567890abcd78",
+      "studentId": "64abc123def4567890abcd56",
+      "subject": "Math",
+      "status": "accepted"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 25,
+    "pages": 3
+  }
+}
+```
+
+#### GET /api/cg/admin/bookings/:bookingId
+
+Request:
+
+```http
+GET /api/cg/admin/bookings/64abc123def4567890abcd90
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Booking fetched successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd90",
+    "teacherId": "64abc123def4567890abcd78",
+    "studentId": "64abc123def4567890abcd56",
+    "subject": "Math",
+    "status": "accepted"
+  }
+}
+```
+
+#### PATCH /api/cg/admin/bookings/:bookingId/status
+
+Request:
+
+```json
+{
+  "status": "accepted"
+}
+```
+
+Headers:
+
+```http
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Booking status updated successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd90",
+    "status": "accepted"
+  }
+}
+```
+
+#### GET /api/cg/admin/sessions
+
+Request:
+
+```http
+GET /api/cg/admin/sessions?page=1&limit=10&status=cancelled&teacherId=64abc123def4567890abcd11
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Sessions fetched successfully.",
+  "data": [
+    {
+      "_id": "64abc123def4567890abcd22",
+      "teacherId": "64abc123def4567890abcd11",
+      "studentId": "64abc123def4567890abcd56",
+      "status": "cancelled"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 12,
+    "pages": 2
+  }
+}
+```
+
+#### GET /api/cg/admin/sessions/:sessionId
+
+Request:
+
+```http
+GET /api/cg/admin/sessions/64abc123def4567890abcd22
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Session fetched successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd22",
+    "status": "cancelled",
+    "teacherId": "64abc123def4567890abcd11",
+    "studentId": "64abc123def4567890abcd56"
+  }
+}
+```
+
+#### PATCH /api/cg/admin/sessions/:sessionId/cancel
+
+Request:
+
+```http
+PATCH /api/cg/admin/sessions/64abc123def4567890abcd22/cancel
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Session cancelled successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd22",
+    "status": "cancelled"
+  }
+}
+```
+
+#### GET /api/cg/admin/payments
+
+Request:
+
+```http
+GET /api/cg/admin/payments?page=1&limit=10&status=completed&studentId=64abc123def4567890abcd33
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Payments fetched successfully.",
+  "data": [
+    {
+      "_id": "64abc123def4567890abcd44",
+      "studentId": "64abc123def4567890abcd33",
+      "teacherId": "64abc123def4567890abcd78",
+      "amount": 120,
+      "status": "completed"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 18,
+    "pages": 2
+  }
+}
+```
+
+#### GET /api/cg/admin/payments/:paymentId
+
+Request:
+
+```http
+GET /api/cg/admin/payments/64abc123def4567890abcd44
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Payment fetched successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd44",
+    "amount": 120,
+    "status": "completed",
+    "transactionId": "txn_12345"
+  }
+}
+```
+
+#### PATCH /api/cg/admin/payments/:paymentId/refund
+
+Request:
+
+```http
+PATCH /api/cg/admin/payments/64abc123def4567890abcd44/refund
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Payment refunded successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd44",
+    "status": "refunded"
+  }
+}
+```
+
+#### GET /api/cg/admin/kyc
+
+Request:
+
+```http
+GET /api/cg/admin/kyc?page=1&limit=10&status=pending
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "KYC submissions fetched successfully.",
+  "data": [
+    {
+      "_id": "64abc123def4567890abcd77",
+      "userId": "64abc123def4567890abcd56",
+      "status": "pending"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 8,
+    "pages": 1
+  }
+}
+```
+
+#### GET /api/cg/admin/categories
+
+Request:
+
+```http
+GET /api/cg/admin/categories?page=1&limit=10
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Categories fetched successfully.",
+  "data": [
+    {
+      "_id": "64abc123def4567890abcd88",
+      "name": "Science"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 5,
+    "pages": 1
+  }
+}
+```
+
+#### GET /api/cg/admin/subjects
+
+Request:
+
+```http
+GET /api/cg/admin/subjects?page=1&limit=10
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Subjects fetched successfully.",
+  "data": [
+    {
+      "_id": "64abc123def4567890abcd99",
+      "name": "Mathematics"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 12,
+    "pages": 2
+  }
+}
+```
+
+#### GET /api/cg/admin/packages
+
+Request:
+
+```http
+GET /api/cg/admin/packages?page=1&limit=10&isActive=true&search=tutor
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Packages fetched successfully.",
+  "data": [
+    {
+      "_id": "64abc123def4567890abcd55",
+      "name": "Starter Pack",
+      "price": 120,
+      "isActive": true
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 14,
+    "pages": 2
+  }
+}
+```
+
+#### GET /api/cg/admin/packages/:packageId
+
+Request:
+
+```http
+GET /api/cg/admin/packages/64abc123def4567890abcd55
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Package fetched successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd55",
+    "name": "Starter Pack",
+    "price": 120,
+    "isActive": true
+  }
+}
+```
+
+#### PATCH /api/cg/admin/packages/:packageId/status
+
+Request:
+
+```json
+{
+  "status": "active"
+}
+```
+
+Headers:
+
+```http
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Package status updated successfully.",
+  "data": {
+    "_id": "64abc123def4567890abcd55",
+    "isActive": true
+  }
+}
+```
+
+#### GET /api/cg/admin/reviews
+
+Request:
+
+```http
+GET /api/cg/admin/reviews?page=1&limit=10&rating=5&search=excellent
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Reviews fetched successfully.",
+  "data": [
+    {
+      "_id": "64abc123def4567890abcd66",
+      "teacherId": "64abc123def4567890abcd34",
+      "studentId": "64abc123def4567890abcd56",
+      "rating": 5,
+      "comment": "Excellent and patient"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 6,
+    "pages": 1
+  }
+}
+```
+
+#### DELETE /api/cg/admin/reviews/:reviewId
+
+Request:
+
+```http
+DELETE /api/cg/admin/reviews/64abc123def4567890abcd66
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Review deleted successfully.",
+  "data": {
+    "reviewId": "64abc123def4567890abcd66"
+  }
+}
+```
+
+#### POST /api/cg/admin/notifications
+
+Request:
+
+```json
+{
+  "audience": "teachers",
+  "title": "System maintenance",
+  "message": "The platform will be unavailable for 30 minutes.",
+  "link": "https://example.com/maintenance"
+}
+```
+
+Headers:
+
+```http
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Notification sent successfully.",
+  "data": {
+    "audience": "teachers",
+    "count": 24
+  }
+}
+```
+
+#### GET /api/cg/admin/notifications
+
+Request:
+
+```http
+GET /api/cg/admin/notifications?page=1&limit=10
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Notifications fetched successfully.",
+  "data": [
+    {
+      "_id": "64abc123def4567890abcd77",
+      "title": "System maintenance",
+      "message": "The platform will be unavailable for 30 minutes.",
+      "audience": "teachers"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 15,
+    "pages": 2
+  }
+}
+```
+
+#### GET /api/cg/admin/analytics
+
+Request:
+
+```http
+GET /api/cg/admin/analytics
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Admin analytics fetched successfully.",
+  "data": {
+    "summary": {
+      "usersByRole": [
+        { "_id": "student", "count": 90 },
+        { "_id": "teacher", "count": 30 }
+      ],
+      "totalBookings": 180,
+      "totalPayments": 160,
+      "totalSessions": 140,
+      "completedSessions": 120,
+      "totalRevenue": 24000
+    },
+    "charts": {
+      "bookings": [
+        { "label": "Feb", "value": 20 },
+        { "label": "Mar", "value": 25 }
+      ]
+    }
+  }
+}
+```
+
+#### GET /api/cg/admin/reports/revenue
+
+Request:
+
+```http
+GET /api/cg/admin/reports/revenue?export=csv&startDate=2026-01-01&endDate=2026-06-30
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```http
+Content-Type: text/csv
+Content-Disposition: attachment; filename="revenue-report.csv"
+```
+
+#### GET /api/cg/admin/reports/users
+
+Request:
+
+```http
+GET /api/cg/admin/reports/users?export=pdf&startDate=2026-01-01&endDate=2026-06-30
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```http
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="users-report.pdf"
+```
+
+#### GET /api/cg/admin/reports/bookings
+
+Request:
+
+```http
+GET /api/cg/admin/reports/bookings?export=csv&startDate=2026-01-01&endDate=2026-06-30
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```http
+Content-Type: text/csv
+Content-Disposition: attachment; filename="bookings-report.csv"
+```
+
+#### GET /api/cg/admin/reports/payments
+
+Request:
+
+```http
+GET /api/cg/admin/reports/payments?export=csv&startDate=2026-01-01&endDate=2026-06-30
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```http
+Content-Type: text/csv
+Content-Disposition: attachment; filename="payments-report.csv"
+```
+
+#### GET /api/cg/admin/reports/teachers
+
+Request:
+
+```http
+GET /api/cg/admin/reports/teachers?export=pdf&startDate=2026-01-01&endDate=2026-06-30
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```http
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="teachers-report.pdf"
+```
+
+#### GET /api/cg/admin/reports/students
+
+Request:
+
+```http
+GET /api/cg/admin/reports/students?export=pdf&startDate=2026-01-01&endDate=2026-06-30
+Authorization: Bearer <admin-token>
+```
+
+Response:
+
+```http
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="students-report.pdf"
 ```
 
 ---

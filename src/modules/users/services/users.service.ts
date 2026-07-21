@@ -29,8 +29,12 @@ export class UsersService {
     includeSuperAdminSecret = false,
     includeSensitiveOtp = false,
     includeResetToken = false,
+    includeDeleted = false,
   ): Promise<UserDocument | null> {
-    const query = this.userModel.findOne({ email: email.toLowerCase() });
+    const query = this.userModel.findOne({
+      email: email.toLowerCase(),
+      ...(includeDeleted ? {} : { isDeleted: false }),
+    });
 
     if (includePassword) {
       query.select('+password');
@@ -60,8 +64,12 @@ export class UsersService {
     includeRefreshToken = false,
     includeSensitiveOtp = false,
     includeResetToken = false,
+    includeDeleted = false,
   ): Promise<UserDocument | null> {
-    const query = this.userModel.findById(id);
+    const query = this.userModel.findOne({
+      _id: id,
+      ...(includeDeleted ? {} : { isDeleted: false }),
+    });
 
     if (includeRefreshToken) {
       query.select('+refreshToken');
